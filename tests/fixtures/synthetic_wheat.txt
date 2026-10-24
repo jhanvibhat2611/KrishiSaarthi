@@ -1,0 +1,7 @@
+SYNTHETIC DEVELOPMENT FIXTURE - NOT AGRICULTURAL ADVICE OR RESEARCH EVIDENCE.
+# Seed record
+The imaginary wheat seed record contains the marker seedmarker.
+# Water record
+The imaginary wheat water record contains the marker watermarker.
+# Storage record
+The imaginary wheat storage record contains the marker storemarker.

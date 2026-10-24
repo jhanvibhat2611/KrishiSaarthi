@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=75", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "krishisaarthi"
+version = "0.1.0"
+description = "Traceable agricultural retrieval baseline scaffold"
+requires-python = ">=3.11"
+dependencies = ["pydantic>=2,<3", "pypdf>=5,<7", "rank-bm25==0.2.2", "regex>=2024.11.6"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8,<10", "reportlab>=4,<6"]
+
+[project.scripts]
+krishisaarthi = "krishisaarthi.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]

@@ -1,0 +1,2 @@
+{"path":"synthetic_wheat.txt","metadata":{"document_id":"synthetic-text","source_url":"https://example.invalid/synthetic-wheat-text","domain_metadata":{"crop":"wheat","country":"India","synthetic":true}}}
+{"path":"synthetic_wheat.pdf","metadata":{"document_id":"synthetic-pdf","domain_metadata":{"crop":"wheat","country":"India","synthetic":true}}}

@@ -1,0 +1,4 @@
+{
+  "e5": {"model_id":"intfloat/multilingual-e5-base","revision":"d128750597153bb5987e10b1c3493a34e5a4502a","tokenizer_revision":"d128750597153bb5987e10b1c3493a34e5a4502a","max_tokens":512,"dimension":768,"pooling":"mean","query_prefix":"query: ","passage_prefix":"passage: ","weight_file":"model.safetensors"},
+  "bge-m3": {"model_id":"BAAI/bge-m3","revision":"5617a9f61b028005a4858fdac845db406aefb181","tokenizer_revision":"5617a9f61b028005a4858fdac845db406aefb181","max_tokens":8192,"dimension":1024,"pooling":"cls","query_prefix":"","passage_prefix":"","weight_file":"pytorch_model.bin"}
+}

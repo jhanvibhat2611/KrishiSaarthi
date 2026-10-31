@@ -61,11 +61,11 @@ def test_unanswerable_exclusion_and_macro_average(document, passages):
     queries = [Query(query_id='q', text='seedmarker'), Query(query_id='u', text='dragon')]
     gold = [GoldLabel(query_id='q', answerable=True, evidence_spans=[positive.evidence_span]), GoldLabel(query_id='u', answerable=False)]
     report = evaluate(BM25Retriever(), queries, gold, [document], passages, EvaluationConfig(ks=[1]))
-    assert report['metrics'] == {'Recall@1': 1, 'cumulative_evidence_mrr_at_k': {'1': 1}, 'mrr_at_k': {'1': None}}
+    assert report['metrics'] == {'Recall@1': 1, 'cumulative_evidence_mrr_at_k': {'1': 1}, 'mrr_at_k': {'1': None}, 'complete_evidence_coverage_at_k': {'1': 1}}
     assert report['total_queries'] == 2 and report['evaluated_queries'] == 1
     assert report['exclusions'] == [{'query_id': 'u', 'reason': 'explicitly_labeled_unanswerable'}]
     report = evaluate(BM25Retriever(), queries[1:], gold[1:], [document], passages, EvaluationConfig(ks=[1]))
-    assert report['metrics'] == {'Recall@1': None, 'cumulative_evidence_mrr_at_k': {'1': None}, 'mrr_at_k': {'1': None}}
+    assert report['metrics'] == {'Recall@1': None, 'cumulative_evidence_mrr_at_k': {'1': None}, 'mrr_at_k': {'1': None}, 'complete_evidence_coverage_at_k': {'1': None}}
 
 
 def test_interface_accepts_other_retriever(document, passages):
@@ -125,7 +125,7 @@ def test_macro_average_includes_answerable_zero_hit(document, passages):
     queries = [Query(query_id='q', text='x')]
     labels = [GoldLabel(query_id='q', answerable=True, evidence_spans=[passages[0].evidence_span])]
     report = evaluate(EmptyRetriever(), queries, labels, [document], passages, EvaluationConfig(ks=[1]))
-    assert report['metrics'] == {'Recall@1': 0, 'cumulative_evidence_mrr_at_k': {'1': 0}, 'mrr_at_k': {'1': None}}
+    assert report['metrics'] == {'Recall@1': 0, 'cumulative_evidence_mrr_at_k': {'1': 0}, 'mrr_at_k': {'1': None}, 'complete_evidence_coverage_at_k': {'1': 0}}
     assert report['evaluated_queries'] == 1
 
 

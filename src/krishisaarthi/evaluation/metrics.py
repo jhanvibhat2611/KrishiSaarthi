@@ -36,3 +36,13 @@ def score_at_k(label, results, k):
         if covered and first_hit is None:
             first_hit = rank
     return {"recall": covered / total, "reciprocal_rank": 1 / first_hit if first_hit else 0.0}
+
+
+def complete_evidence_coverage_at_k(label, results, k):
+    """Strict ALL-span coverage; no passage-relevance reinterpretation."""
+    if k <= 0:
+        raise ValueError("K must be positive")
+    if not label.answerable or not label.evidence_spans:
+        raise ValueError("Complete evidence coverage requires answerable span labels")
+    retrieved = [result.evidence_span for result in results[:k]]
+    return float(all(fully_covered(span, retrieved) for span in label.evidence_spans))

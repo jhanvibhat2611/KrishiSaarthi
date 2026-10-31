@@ -1,0 +1,14 @@
+[chunking]
+size = 256
+overlap = 48
+# Only explicit Markdown headings are recognized. Never infer PDF layout.
+heading_pattern = '^#{1,6}[ \t]+[^\n]+$'
+
+[bm25]
+k1 = 1.5
+b = 0.75
+epsilon = 0.25
+
+[evaluation]
+ks = [1, 3, 5]
+coverage_rule = "strict_union"

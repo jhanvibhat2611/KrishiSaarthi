@@ -1,0 +1,34 @@
+Phase 3A: equal-weight RRF baselines
+
+RRFRetriever implements the existing index/search interface and accepts any lexical
+and dense Retriever. Each search requests the entire indexed corpus from both.
+For passage p: score(p) = sum_i 1 / (constant + rank_i(p)), with one-based ranks.
+Default constant is 60; no tuning on the signed pilot set. Ties use passage ID.
+Absent results contribute zero. Duplicate IDs within an input list are rejected;
+the same ID across inputs receives one contribution from each. Inconsistent source
+provenance is rejected. The pilot requires both complete 15-passage input lists.
+
+Standard: every BM25 and dense result contributes, including zero-score BM25 ties.
+Diagnostic: BM25 scores <=0 contribute nothing. Retained results keep original
+ranks (no compaction). Dense scores are never thresholded. This diagnostic is
+neither a novel method nor a replacement for the standard baseline.
+
+Run from the project directory with the existing environment:
+  .venv/bin/python scripts/run_hybrid_pilot.py --constant 60 \
+    --output data/experiments/hybrid-comparison-v0.1-run-002
+  .venv/bin/python -m pytest -q
+
+The runner replays immutable full rankings from the three completed run-001
+baselines; it does not re-encode or change baseline scores. It validates input
+ledgers, query text, corpus/annotation/evaluation fingerprints, signed annotations,
+source spans and complete ranking coverage before fusion. An unseen query requires
+live retrievers instead of the replay helper. Existing evaluation code is reused.
+Runtime in hybrid manifests measures replay, fusion, evaluation and analysis,
+not model inference or comparable end-to-end live latency.
+
+Each variant directory contains config, evaluation and full per-query rankings.
+The root comparison includes all seven models, paired changes versus each input,
+strict improvements/degradations versus both inputs and multi-span analysis.
+The HTML displays all language metrics and all 48 query comparisons. For run-001,
+additional validation and proposal files accompany the report. All data remains
+Git-ignored; no approved annotations or frozen corpus records are changed.

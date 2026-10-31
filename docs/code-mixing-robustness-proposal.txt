@@ -1,0 +1,65 @@
+PROPOSAL ONLY — not implemented or labeled
+
+Question: How does lexical overlap and script choice affect multilingual dense
+retrieval and equal-weight RRF, and how much harmful fusion is attributable to
+non-positive BM25 ranks rather than positive but misleading lexical scores?
+
+Design
+Use the same frozen evidence collection initially, without modifying the signed
+48-query baseline. Create a separate versioned, human-reviewed challenge set.
+For each of the 12 answerable information needs, propose a matched set of:
+(1) natural Hinglish retaining English agricultural terms;
+(2) equivalent Hinglish using Hindi terminology with few/no English keywords;
+(3) a natural Romanized-Hindi spelling variation of (2);
+(4) a Hindi-script rendering of (2).
+Keep crop, cultivation, dates, units and AND/multi-span conditions identical.
+Human reviewers verify semantic equivalence and evidence sufficiency before any
+labels are exported. Four unanswerable needs may receive analogous variants but
+stay excluded from evidence-retrieval metrics. Do not claim retrieval rankings
+alone establish an answerability detector. This is a separate robustness dataset,
+not an overwrite or expansion of the signed baseline without approval.
+
+Overlap measurement and controls
+Pre-register a Unicode-tokenizer-based overlap ratio: distinct query terms that
+also occur in the union of its required evidence passages divided by distinct
+query terms. Separately count corpus-vocabulary overlap and English-origin
+agricultural terms using human annotation: Latin script is not synonymous with
+English. Record stopwords, numbers and punctuation separately to distinguish
+agricultural matches from incidental matches. Define high versus low overlap as
+a within-information-need paired contrast, avoiding thresholds chosen from
+retrieval outcomes. Preserve naturalness; report pairs that cannot be matched
+without changing meaning rather than forcing them. Script comparison should
+use reviewed transliterations with otherwise matched wording, and explicitly
+report confounding differences that remain.
+
+Frozen comparisons
+Run BM25, E5, BGE-M3 and the four fixed RRF variants using the same corpus,
+model revisions, constant 60 and evaluation definitions. No normalization,
+translation, reranking, training or hyperparameter search is proposed here.
+
+Primary outcomes
+Paired change in complete evidence coverage@3 (primary), with Recall@1/3/5,
+cumulative evidence MRR@1/3/5 and complete coverage@1/5 as secondary outcomes.
+Report per-information-need effects, worst-variant complete coverage and variation
+within each matched set. Language variants from one need are not independent
+samples. Keep IN-08 and IN-10 ALL-required and inspect each span's rank.
+
+Fusion mechanism diagnostics
+Count BM25 queries with no positive scores, all-zero lists, partial positive lists,
+and positive matches consisting only of incidental tokens. Compare standard vs
+gated RRF against the same dense input: number of dense successes lost, number
+recovered by gating, and residual failures with positive but misleading matches.
+When every BM25 score is non-positive, gated ordering must exactly equal dense
+ordering (an invariant, not empirical proof of a new method). Separate cutoff
+crossings caused by deterministic zero-score ordering from meaningful lexical
+retrieval. Do not threshold cosine/RRF scores as lexical matches.
+
+Potential measurable contribution
+A human-validated matched multilingual/code-mixed challenge set could quantify
+within-need robustness loss under reduced English keyword overlap, spelling and
+script changes, and isolate which fusion failures are explained by zero-score
+rank contributions. Report effect sizes and raw paired outcomes, including null
+and adverse effects. RRF and score gating themselves are established baselines,
+not the contribution. The tiny single-document pilot is hypothesis-generating;
+any general claim needs independently reviewed, held-out needs and broader
+sources approved separately. No significance claim is justified by this pilot.

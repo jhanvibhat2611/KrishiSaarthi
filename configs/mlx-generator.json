@@ -1,0 +1,68 @@
+{
+  "model_id": "mlx-community/Qwen3-4B-Instruct-2507-4bit",
+  "revision": "50d427756c6b1b2fe0c0a10f67fbda1fc8e82c1b",
+  "tokenizer_revision": "50d427756c6b1b2fe0c0a10f67fbda1fc8e82c1b",
+  "packages": {
+    "mlx-lm": "0.26.3",
+    "mlx": "0.26.5",
+    "transformers": "4.57.1"
+  },
+  "files": {
+    "added_tokens.json": {
+      "size": 707,
+      "git_blob_sha1": "b54f9135e44c1e81047e8d05cb027af8bc039eed"
+    },
+    "chat_template.jinja": {
+      "size": 4040,
+      "git_blob_sha1": "a18870ad4ba26ac6c43758fc506c1bb6ff206bb4"
+    },
+    "config.json": {
+      "size": 938,
+      "git_blob_sha1": "ce8b8eccd1cdf6d8a30767f58e8ff858dd15eab5"
+    },
+    "generation_config.json": {
+      "size": 238,
+      "git_blob_sha1": "432531a002c181a19de338313d2375e9d7494d7e"
+    },
+    "merges.txt": {
+      "size": 1671853,
+      "git_blob_sha1": "31349551d90c7606f325fe0f11bbb8bd5fa0d7c7"
+    },
+    "model.safetensors": {
+      "size": 2263022417,
+      "git_blob_sha1": "dd214eb9a62926b4a65539d04eac461017fe86ba",
+      "sha256": "2a73c6c248601ab904e035548abd8e6abb65ea27dcb5f342fb0a8910eb44173f"
+    },
+    "model.safetensors.index.json": {
+      "size": 63964,
+      "git_blob_sha1": "4741a210f9920c2949ca73bbb2a7ce9583e7fd83"
+    },
+    "special_tokens_map.json": {
+      "size": 613,
+      "git_blob_sha1": "ac23c0aaa2434523c494330aeb79c58395378103"
+    },
+    "tokenizer.json": {
+      "size": 11422654,
+      "git_blob_sha1": "cd71f61a15a522601badb3dc960d800d9cb3766c",
+      "sha256": "aeb13307a71acd8fe81861d94ad54ab689df773318809eed3cbe794b4492dae4"
+    },
+    "tokenizer_config.json": {
+      "size": 5440,
+      "git_blob_sha1": "474bbcd82077828bdec32b8dbc1826cdff2a792a"
+    },
+    "vocab.json": {
+      "size": 2776833,
+      "git_blob_sha1": "4783fe10ac3adce15ac8f358ef5462739852c569"
+    }
+  },
+  "inference": {
+    "max_tokens": 512,
+    "context_limit": 8192,
+    "temperature": 0.0,
+    "seed": 0,
+    "prompt_prefill_step_size": 256,
+    "batch_size": 1,
+    "chat_template": "pinned tokenizer apply_chat_template; tokenize=True; add_generation_prompt=True"
+  },
+  "download_policy": "Explicit user approval required; adapter loads verified local files only"
+}

@@ -1,0 +1,61 @@
+First independent development batch — 20 blank information-need slots
+
+This is a workflow and empty planning workspace, not a generated or signed dataset.
+No new source is approved. Evidence IDs, questions, judgments, reviewer details and
+future corpus fingerprint remain empty until actual acquisition and human review.
+Use existing corpus registry, ingestion, audit, inspect/build and annotation templates.
+No new acquisition service, OCR pipeline or annotation application is required.
+
+1. Approve a bounded source list and permissible local acquisition. Record publisher,
+   exact title, edition/publication date and uncertainty, URL, local original SHA256,
+   source language, geographic/temporal applicability and license evidence. Publication
+   date is not website crawl/upload/footer date. No open license is inferred from access.
+2. Prepare a fresh versioned corpus bundle using the existing corpus CLI. Keep originals
+   and canonical text immutable. Audit selected wheat pages, preserving physical page,
+   printed label, page text hash, source hashes and exact Unicode [start,end) offsets.
+   Render title/license and every proposed evidence page. Compare text order, glyphs,
+   numbers/units and page-local visibility. Check exact and near-duplicate pages/paragraphs
+   across editions/sources; suspicious repeated spreads stay held. Do not delete duplicates
+   from canonical text or repair glyphs in place. Request a clean source or approve a new
+   extraction version separately. Unresolved tables, private names/addresses and ambiguous
+   numerical recommendations stay outside the evidence index. No blanket PDF approval.
+3. Humans approve contiguous regions with recorded conditions and limitations. Use the
+   current validation and approved-region build workflow, 256/48 configuration. Freeze a
+   NEW corpus version; never amend Pilot Corpus v0.1. Freeze evidence-family blocks before
+   question assignment, linking duplicate/related multi-span sources across documents.
+4. Allocate proposed topics: varieties/sowing 3; nutrients 3; irrigation 3; diseases/pests 3;
+   harvesting 2; storage 2; four explicit missing-evidence cases distributed across topics.
+   These 16+4 are targets, not answerability assignments. Aim at six ALL-multi-span needs,
+   three documents/regions and max eight needs per document. Missing coverage is reported.
+5. Independent human authors write the 20 needs without seeing old pilot question wording,
+   model rankings or generated answers. They may inspect approved evidence and describe
+   genuine source-scoped needs, not merely copy sentences. Author EN/HI/natural Hinglish
+   for each. Reviewers check equivalence independently; record source, crop, place, season,
+   cultivation conditions, exceptions and units. Stress spelling/keyword/script variants
+   are optional, separately reviewed and linked to the SAME parent group and split.
+6. Second human reviewer maps minimal canonical evidence spans, IDs and page references.
+   For multiple required parts use ALL, with separate rows for disconnected spans; never
+   merge unrelated fragments. Evidence ID, source-region ID and passage ID are distinct.
+   Re-check each language's support, not just English. Keep exact quotes local only.
+7. For unanswerable proposals, inspect the ENTIRE newly frozen corpus; record the missing
+   requirement and searched scope. Another document may now answer an old pilot-unanswerable
+   question. Never inherit that label. Blank fields mean pending, not unanswerable. A source
+   conflict may require a scoped comparison or uncertain status, not arbitrary majority choice.
+8. Adjudicate disagreements with real identities/times and retained notes. Require per-variant
+   acceptance, language equivalence, privacy, source-span and ALL coverage checks. Failed checks
+   stay pending/revise/reject. No assistant recommendation substitutes for human sign-off.
+9. Validate final hashes and exact source/page/span mappings against the reviewed corpus. Use
+   the existing validated label schema and metric pathway; no claim of a general public gold-
+   export CLI. The local pilot-specific export script must not be blindly reused with new IDs.
+   Any needed export/report adaptation is separate, tested work after corpus/schema sign-off.
+10. Only after final sign-off and explicit evaluation authorization export verified records and
+    run frozen baselines. No automatic evaluation of drafts. Keep the original signed pilot
+    and its old answerability scope intact. Store all new filled forms and results under data/.
+
+Existing commands to reuse later, not run during planning:
+  .venv/bin/python -m krishisaarthi.corpus prepare --registry data/<new-version>/registry.jsonl --output data/<new-version>/review-v1
+  .venv/bin/python -m krishisaarthi.corpus inspect --bundle data/<new-version>/review-v1 --region-id <actual-id> --show-text
+  .venv/bin/python -m krishisaarthi.corpus build --bundle data/<new-version>/review-v1 --output data/<new-version>/approved-v1 --config configs/baseline.toml
+Use corpus.annotations.write_templates for header-only questions/evidence CSVs.
+A separate local group-planning JSON links evidence-family IDs and ALL requirements;
+it is not a new GoldLabel schema and cannot be exported/evaluated as labels.

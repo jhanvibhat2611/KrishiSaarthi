@@ -1,0 +1,137 @@
+Phase 6 benchmark protocol v1 — pre-specified draft for human approval
+
+Status and scope
+No new data approved or labeled; no new retrieval method or router implemented.
+Freeze the current fourteen lexical/dense/hybrid configurations as comparison
+configurations. The original 16 signed needs and 24 pending stress variants are
+pilot/development only, never the independent final test. Prior Phase 5 hypotheses
+are historical proposals, not confirmed contributions. This document governs the
+next benchmark only after approval and version/hash registration before test access.
+
+Collection and split
+First author a development batch of 20 needs after new source regions are approved.
+Proposed composition: 16 answerable, four corpus-relative unanswerable; six of the
+answerable needs require ALL of at least two spans. These are recruitment targets,
+not prefilled judgments. Target at least three documents and three applicable
+regions, no more than eight needs from one document. If approved evidence cannot
+support that balance, report the gap; never manufacture examples to fill quotas.
+
+Later retain the proposed larger target: 60 development answerable +15 unanswerable
+and 120 independent held-out answerable +30 unanswerable, each with English, Hindi
+and natural Hinglish. The first 20 belong inside development, not in addition to a
+new hidden test. At least 40 held-out answerable needs should require multiple spans.
+These targets do not establish statistical power. Assess precision with development
+paired disagreements before sealing test size; never resize after viewing outcomes.
+
+Before questions are assigned, cluster evidence families across documents: repeated
+recommendations, cultivar facts, conditions, copied passages, nearby editions and
+connected multi-span requirements. All related questions, translations, stress
+variants and connected evidence families stay in one split. If a need crosses two
+families, merge their split blocks or exclude that need. Do not split by passage ID
+or random query row. Prefer document/section holdouts too, while keeping topics and
+regions represented. Corpus may include all approved evidence as unlabeled retrieval
+material; test questions, labels and judgments stay hidden from method development.
+Vocabulary/IDF computed from the indexed collection is allowed; test-question or
+label-derived rules, lexicons or choices are not. The pilot families are development
+blocks even if the same statements occur in new documents.
+
+Baseline matrix (both E5 and BGE-M3 backbones)
+1 Original BM25; 2 punctuation-filtered BM25.
+3 E5 dense-only; 4 BGE-M3 dense-only.
+5–6 original equal-weight standard RRF.
+7–8 original BM25 positive-score-gated RRF.
+9–10 punctuation-filtered standard RRF.
+11–12 punctuation-filtered positive-score-gated RRF.
+13–14 content-token-gated diagnostic (current policy, including numeric tokens).
+No old configuration is replaced. k1=1.5, b=.75, epsilon=.25; RRF k=60, weights 1/1;
+no tuning. Preserve pinned models, tokenizer revisions, inference settings, normalized
+embeddings, stable passage-ID tie-breaking and strict no-truncation checks.
+
+Routing comparators, proposed only and explicitly specified before implementation:
+For each dense backbone, supplied-language router: hi -> dense-only; en/hinglish ->
+filtered positive-score RRF; missing/unknown tag -> dense-only. A supplied human
+language tag is operational metadata, not a predicted language detector; report this
+assumption. Do not use answerability, evidence IDs or gold overlap.
+Script router: over Unicode letters only, >50% Devanagari -> dense-only; otherwise
+filtered positive-score RRF; no letters -> dense-only. Script identifies script,
+not English versus Hinglish. This fixes the stronger filtered-gated alternate branch
+rather than the original-standard branch suggested in the historical Phase 5 plan;
+it is a declared new protocol proposal, not a retroactive change to that experiment.
+No trained language detector or threshold selection. Future adaptive method requires
+separate architecture approval and pre-specified development selection.
+
+Ranking depth and evidence
+Keep 256-token chunks with 48 overlap, reviewed boundaries and source hashes.
+Use complete collection rankings for each component in this modest benchmark before
+selecting Top-K, just as in the pilot. No silent top-100 cutoff. If scale makes that
+impractical, obtain approval for a separately versioned equal-budget protocol before
+running the held-out test. Record ALL evidence spans; strict full canonical interval
+coverage by the union of same-source/version retrieved passages. One span counts once.
+No minimal-answer collapse or score-dependent gold relabeling.
+
+Primary endpoint — group-macro complete evidence coverage@3
+For answerable need g and its three approved base language variants l, C(g,l,K)=1
+only if ALL required gold spans are completely covered in Top-K; otherwise 0.
+Primary = mean over answerable groups of [C(g,en,3)+C(g,hi,3)+C(g,hinglish,3)]/3.
+Report each language separately as mean_g C(g,l,3). Require all three reviewed base
+variants; missing language is a validation failure, not a smaller denominator.
+Exclude explicitly signed unanswerable needs from positive-evidence metrics; retain
+counts/reasons and ranked results. Missing labels are errors, not unanswerability.
+Stress variants receive a separate group-macro table by perturbation type. They do
+not change the primary three-language denominator or add independent samples.
+This is a specified report aggregation over the existing per-query metrics. Do not
+change the current evaluation runner or original macro metrics silently. A future
+separate group-aggregation report needs tests before use; it is not implemented here.
+
+Secondary endpoints
+Unchanged Recall@1/3/5, cumulative_evidence_mrr_at_k at 1/3/5 and complete coverage@1/5,
+aggregated with the same base-group/language weights. Keep cumulative evidence MRR's
+first fully covered ANY span semantics; it does not measure complete multi-span
+retrieval. Reserve mrr_at_k for conventional judged passage relevance.
+Per-language failure rate = answerable queries with incomplete ALL coverage at K
+/ answerable queries of that language. Also report zero-recall failures, missing-span
+IDs and multi-span subset. Report lexical no-positive rates separately over ALL
+queries, including unanswerables; never call cosine scores lexical matches. No claim
+that retrieval abstains on unanswerable needs without a separately approved policy.
+Runtime: separate cold model loading, corpus encoding/indexing, warm query encoding,
+search and fusion; hardware/device, batch size, cache state, token lengths, p50/p95
+and peak memory. Use identical declared query order and three measured warm passes
+with a fixed warm-up, without interleaved model loading. Saved-ranking replay runtime
+cannot be compared with end-to-end dense inference runtime.
+
+Paired analysis and uncertainty
+Pair systems on identical groups and corpus versions. Primary pre-specified contrasts,
+for each backbone: filtered positive-score RRF versus dense-only, versus original
+standard RRF, versus filtered standard RRF; content-gated versus filtered-positive;
+filtered-positive versus supplied-language router and versus script router. Twelve
+contrasts total. Other matrix comparisons are descriptive unless added before test
+unblinding. Always report absolute deltas and per-group wins/ties/losses.
+Resample evidence-family blocks, keeping all grouped needs and languages together,
+10,000 paired bootstrap replicates, seed 20261101. Recompute group-weighted estimates
+within each replicate; report percentile 95% paired intervals and cluster counts.
+Report secondary language and multi-span intervals as exploratory. Do not treat 3
+translations or many overlapping chunks as independent observations. For sparse
+family counts, say intervals are unstable; include document-level sensitivity rather
+than claiming many query variants solve limited source diversity.
+If hypothesis testing is later warranted and approved, preregister a paired family-
+level permutation test and Holm correction over the twelve primary contrasts; do
+not infer significance from uncorrected intervals or this tiny development batch.
+No held-out tuning, best-backbone selection, query exclusion or threshold search.
+Unblind once after corpus, labels, code, baselines, seed and protocol hashes freeze.
+Any post-test change is exploratory and needs a fresh test set for confirmation.
+
+Ablations and acceptance boundary
+Use the existing factorial controls: original/filtered tokens; all/positive lexical
+contributions; positive/content gate; dense-only; supplied-language/script routing.
+Hold candidate depth, labels, k and encoders fixed. Inspect entity/numeric, script,
+keyword-retention and spelling strata, defined before result viewing. Do not
+introduce another lexical heuristic to fix one observed query. Negative results are
+valid. A future proposed method must improve beyond the strong controls on independent
+needs with uncertainty reported; the current pilot cannot establish novelty.
+
+Annotation and release gates
+Follow docs/development-annotation-workflow.txt. Actual independent author/reviewer
+identities, review timestamps and adjudication are required; do not fabricate them.
+Unknown licenses stay unknown. Publish no raw documents, passages, filled annotations
+or generated outputs without explicit rights review. Source/corpus/annotation/model/
+configuration and experiment fingerprints must be retained locally for reproducibility.

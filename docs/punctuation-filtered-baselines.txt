@@ -1,0 +1,72 @@
+Punctuation-filtered lexical and hybrid controls
+
+This is a separate retriever configuration. Original bm25.py, baseline tokenizer,
+chunker, canonical source text and previous scores/results remain unchanged.
+PunctuationFilteredBM25Retriever subclasses the original scoring/ranking and
+lexical diagnostic implementation; only its term tokenizer and retriever ID differ.
+Both indexing and query processing use exactly the same filter. A token must contain
+at least one Unicode letter or number. Attached combining marks, alphanumeric names
+and numeric tokens remain. Punctuation-only tokens, standalone symbols and isolated
+combining marks are removed. A corpus passage without surviving terms is rejected.
+An empty filtered query returns deterministic zero-score ranks, not a lexical match.
+
+Hyphenated terms retain the original word boundaries: rice-residue -> rice, residue;
+a synthetic variety PBW-999 -> pbw, 999. No compound joining or stemming. Decimal
+12.5 -> 12, 5; percent signs and unit separators are removed, not interpreted.
+Thus numeric components survive but exact decimals/ranges are not modeled as atomic
+quantities. This is a lexical preprocessing control, not quantity reasoning.
+No stopword removal, translation, transliteration or synonym expansion is added.
+Document lengths and IDF change when punctuation is removed, so even queries without
+punctuation can have different scores. Original scoring parameters stay fixed.
+
+Configuration: configs/punctuation-filtered-bm25.json. BM25 k1=1.5, b=.75,
+epsilon=.25. Standard equal-weight RRF k=60 uses complete 15-passage rankings before
+Top-K, preserving original ranks, passage IDs and source provenance. Non-positive
+scores are NOT gated in these new standard controls. As a result, all-zero lexical
+lists still influence RRF through stable passage-ID ties. Dense scores are never
+interpreted as lexical match probabilities.
+
+Reproduce with authorized local frozen data and saved dense baseline runs:
+  PYTHONPATH=src .venv/bin/python scripts/run_preprocessing_controls.py \
+    --output data/phase5.1-controls-reproduction-001
+  .venv/bin/python -m pytest -q
+Use a fresh output directory; the script refuses overwrites. It validates saved
+integrity ledgers, signed annotation hashes, the evaluation fingerprint, ALL-span
+labels and complete dense provenance before evaluating. It replays exact saved dense
+rankings instead of loading checkpoints. No pending query variant is evaluated.
+The reports use existing schema/metrics, exclude explicitly unanswerable queries
+from positive-evidence means and retain them in score diagnostics. All result files,
+labels, questions and source text stay Git-ignored under data/.
+
+Research boundary after this control
+Punctuation filtering and zero-score gating are established preprocessing/ranking
+controls, not novelty. Standard filtered RRF can still be harmed by zero-score ties.
+The next necessary comparison is filtered BM25 plus non-positive-score-gated RRF;
+that combination is proposed, not run in this checkpoint. Language/script routing
+and dense-only must remain comparators. No candidate reliability mechanism has yet
+shown added value over this combined control.
+
+Simplest candidate for approval, not implementation: on top of filtered BM25,
+allow a lexical RRF contribution only when its score is positive AND query/candidate
+share at least one non-generic alphabetic content token after a fixed corpus-reviewed
+function-word/generic-word exclusion list. Numbers alone are insufficient.
+S(q,p)=1/(60+r_dense(p))+g(q,p)/(60+r_filtered_BM25(p)).
+This deliberately simplifies the earlier proposed >=2-or-entity rule to a single
+content-presence check; it is a new proposal requiring approval, not a silent method
+change. Keep entity identity as a diagnostic first, avoiding an unvalidated catalog
+as a routing dependency. Exact entities can be considered later in a declared
+ablation if the simplest gate has residual failures. No gold/answerability features.
+No retained lexical contribution -> dense ordering; invalid provenance -> fail.
+Stable ties and frozen ranking budgets remain unchanged. Content overlap still does
+not imply relevance; rare terms can occur in irrelevant passages and useful Romanized
+Hindi may have no exact English overlap. Do not choose a winning gate on the pilot.
+
+Ablation sequence on reviewed development variants, then independent held-out needs:
+dense; original/filtered BM25; original/filtered standard RRF; original/filtered
+positive-score-gated RRF; simple script/language routing; optional content gate.
+Only the original seven and three approved new preprocessing controls have run here.
+Measure ALL-span coverage@1/3/5 and paired failures, retaining existing recall/MRR.
+If the content gate cannot improve beyond the combined preprocessing+gating control
+and language routing, reject the added method complexity. Any research contribution
+must then rest on a useful independently validated robustness analysis, not a claim
+of algorithmic novelty. The existing pilot remains development-only.

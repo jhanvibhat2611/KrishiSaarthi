@@ -1,0 +1,10 @@
+{
+  "tokenizer": "unicode-words-containing-letter-or-number-v1",
+  "bm25": {"k1": 1.5, "b": 0.75, "epsilon": 0.25},
+  "rrf_constant": 60,
+  "rrf_weights": [1, 1],
+  "gate_nonpositive_lexical": false,
+  "ranking_depth": "complete_frozen_corpus",
+  "ks": [1, 3, 5],
+  "tie_break": "passage_id"
+}

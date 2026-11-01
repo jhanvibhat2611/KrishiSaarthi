@@ -1,0 +1,14 @@
+{
+  "lexical": "punctuation-filtered-bm25",
+  "bm25": {"k1": 1.5, "b": 0.75, "epsilon": 0.25},
+  "rrf_constant": 60,
+  "weights": [1, 1],
+  "input_depth": "complete_frozen_corpus",
+  "positive_gate": "score > 0",
+  "content_gate": "score > 0 AND at least one shared policy token",
+  "content_policy": "filtered-exact-content-and-numbers-v1",
+  "numeric_tokens": "retained; exact token matches, not verified quantities",
+  "ks": [1, 3, 5],
+  "rank_policy": "original component ranks, no compaction",
+  "tie_break": "passage_id"
+}

@@ -1,0 +1,65 @@
+Phase 5.2 — simple lexical reliability controls
+
+Implementations
+Filtered positive-score RRF reuses the existing RRFRetriever, k=60, weights [1,1],
+gate_nonpositive_lexical=True and complete saved filtered-BM25/dense rankings.
+The new ContentGatedRRFRetriever is a separate diagnostic. It uses the same RRF
+and permits a lexical contribution only when score>0 AND the query and candidate
+share at least one policy token. Original component ranks are never compacted.
+No original retriever, scores, labels or result files are changed.
+
+Content policy
+Start with the existing punctuation-filtered Unicode terms. Casefold, then remove
+the explicit fixed FUNCTION_WORDS and GENERIC_WORDS sets in content_gate.py from
+BOTH query and candidate. The manifest records the full lists, not just a name.
+Generic wheat/crop/field/farm words do not establish a distinctive content match.
+Other agricultural terms, cultivar components, named-equipment words, alphanumeric
+identifiers, numbers and units remain. No entity dictionary or learned classifier.
+This is a lexical proxy for meaningful overlap, not a semantic support judgment.
+An exact number or unit can pass the gate; it may be incidental or unrelated. All
+such overlaps are exposed in per-candidate diagnostics, not certified meaningful.
+
+Hyphenated rice-residue -> rice, residue; synthetic PBW-999 -> pbw, 999.
+Decimal 12.5 -> 12, 5, as in the approved baseline tokenizer. Numeric tokens survive
+but decimal/range/quantity semantics are not reconstructed. No translation,
+transliteration, stemming, joining or extra embedding model. Devanagari words keep
+attached marks. Crop-word exclusion is exact English vocabulary, not multilingual
+synonym removal. Numerical eligibility follows the explicit Phase 5.2 requirement;
+it differs from the earlier proposed alphabetic-only diagnostic.
+
+S(q,p) = 1/(60+r_dense(p)) + g(q,p)/(60+r_filtered_BM25(p)).
+Positive gate: g=1 iff score>0.
+Content gate: g=1 iff score>0 and policy(query) intersects policy(candidate).
+Missing/gated lexical contributions are zero. If all lexical contributions vanish,
+the ordering, passage IDs, ranks and provenance exactly match dense-only retrieval,
+including its existing tie order. Hybrid scores remain reciprocal-rank scores,
+not raw cosine scores. This preserves ranking, not the raw dense result object.
+Input rank completeness and all source provenance are validated even for candidates
+that will be gated out. Invalid scores/provenance fail rather than disappearing.
+The private score-mask adapter is an internal RRF input, not a standalone retriever;
+it zeros rejected contributions while retaining original ranks for gating.
+
+Inference isolation
+The gate consumes only query text, indexed passage text and component outputs.
+Gold labels and expected answers are never imported or read by content_gate.py.
+The experiment runner uses labels only for scoring and retrospective failure reports.
+Original signed queries are evaluated as development material. The 24 pending
+stress variants and their approvals remain unchanged and are not evaluated.
+
+Reproduce with authorized local assets:
+  PYTHONPATH=src .venv/bin/python scripts/run_lexical_reliability_controls.py \
+    --output data/phase5.2-controls-reproduction-001
+  .venv/bin/python -m pytest -q
+Uses the validated Phase 5.1 saved lexical rankings and saved E5/BGE-M3 rankings.
+Fresh ignored output only; no encoder, generator or new checkpoint loaded.
+Configuration: configs/lexical-reliability-controls.json. All source/configuration
+hashes, input hashes, dependency versions and policy lists are saved in the manifest.
+
+Interpretation boundary
+Prefer the simpler filtered positive-score gate unless independent evidence shows
+benefit from content gating. Keep both dense backbones as controls; do not choose a
+universal winner on this small development pilot. Score gating can remove accidental
+useful lexical rank effects as well as harmful ones. Dense-only can still miss one
+part of a multi-evidence need. Neither gate establishes relevance, answerability or
+agricultural correctness. No novelty or significance is claimed. More complex
+adaptive retrieval requires a new rationale and independent reviewed evaluation.

@@ -52,6 +52,7 @@ class Sufficiency(Model):
 
 class RAGResponse(Model):
     execution_mode: Literal['conservative','research_draft'] = 'conservative'
+    failure_category: str | None = None
     original_question: str
     retrieved_passage_ids: list[str]
     evidence_fingerprint: str

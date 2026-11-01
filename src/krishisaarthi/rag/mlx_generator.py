@@ -7,7 +7,7 @@ import time
 from importlib.metadata import version
 from pathlib import Path
 from ..validation import require
-from .models import GeneratedAnswer
+from .handles import parse_handle_answer, resolve_answer, OutputFailure
 
 
 def validate_checkpoint(directory, config):
@@ -63,12 +63,14 @@ class MLXGenerator:
                     prefill_step_size=self.config['inference']['prompt_prefill_step_size']):
                 parts.append(response.text);tokens+=1
             self.last_output_text=''.join(parts)
-            result=GeneratedAnswer.model_validate_json(self.last_output_text)
+            if getattr(response, 'finish_reason', None) == 'length':
+                raise OutputFailure('output_length_exhaustion', 'Generation reached the output limit')
+            result=resolve_answer(parse_handle_answer(self.last_output_text), evidence)
         finally:
             self.last_metrics={'runtime_seconds':time.perf_counter()-start,
                 'mlx_peak_bytes':self.mx.get_peak_memory(),'process_lifetime_peak_rss_bytes':resource.getrusage(resource.RUSAGE_SELF).ru_maxrss,
                 'memory_limit_bytes':getattr(self,'memory_limit_bytes',None),'load_seconds':self.load_seconds,'load_peak_mlx_bytes':self.load_peak_bytes,
-                'input_tokens':len(prompt),'output_steps':tokens,'output_tokens':getattr(response,'generation_tokens',tokens) if parts else 0,'max_tokens':self.max_tokens,
+                'input_tokens':len(prompt),'output_steps':tokens,'output_tokens':getattr(response,'generation_tokens',tokens) if parts else 0,'max_tokens':self.max_tokens,'finish_reason':getattr(response,'finish_reason',None) if parts else None,'formatting_repair_attempts':0,
                 'model_revision':self.config['revision'],'temperature':0.0,'seed':self.config['inference']['seed'],
                 'prompt_tokens_sha256':hashlib.sha256(json.dumps(prompt).encode()).hexdigest(),
                 'determinism_note':'Greedy decoding with fixed seed; cross-hardware bitwise reproducibility is not guaranteed.'}

@@ -31,7 +31,7 @@ def test_fake_runtime_prompt_and_metrics(monkeypatch):
     seen={}
     def stream(*args,**kwargs):
         seen.update(kwargs)
-        yield SimpleNamespace(text='{"claims":[],"missing_context":["unavailable"],"abstain":true}')
+        yield SimpleNamespace(text='{"answer_status":"insufficient_evidence","answer_text":"","claims":[],"uncertainty":["unavailable"]}')
     def sampler(**kw):
         assert kw=={'temp':0.0};return 'greedy'
     monkeypatch.setitem(sys.modules,'mlx_lm',SimpleNamespace(stream_generate=stream))
@@ -43,7 +43,7 @@ def test_fake_runtime_prompt_and_metrics(monkeypatch):
     g.mx=SimpleNamespace(random=SimpleNamespace(seed=lambda s:None),reset_peak_memory=lambda:None,get_peak_memory=lambda:123)
     g.config={'revision':'a'*40,'inference':{'context_limit':20,'seed':0,'prompt_prefill_step_size':256}}
     g.max_tokens=10;g.load_seconds=.01;g.load_peak_bytes=100
-    assert g.generate([{'role':'user','content':'synthetic'}],None).abstain
+    assert g.generate([{'role':'user','content':'synthetic'}],SimpleNamespace(passages=[])).abstain
     assert seen['prompt']==[1,2,3] and seen['sampler']=='greedy'
     assert g.last_metrics['mlx_peak_bytes']==123 and g.last_metrics['runtime_seconds']>=0
     g.max_tokens=20

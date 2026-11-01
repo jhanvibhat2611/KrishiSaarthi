@@ -28,6 +28,7 @@ class RAGPipeline:
                 'Citation validity does not establish factual entailment. Unsupported claims require review, not automatic certification.'])
         assessment=self.checker.assess(evidence,review);response.warnings.extend(assessment.reasons)
         if not assessment.sufficient_to_attempt and (mode=="conservative" or not evidence.passages):
+            response.failure_category='missing_evidence'
             response.diagnostics={'runtime_seconds':time.perf_counter()-started,'generator_called':False};return response
         if mode=='conservative':
             response.answerability='sufficient_to_attempt'
@@ -36,12 +37,15 @@ class RAGPipeline:
         try:
             result=GeneratedAnswer.model_validate(self.generator.generate(self.prompt_builder.build(evidence),evidence))
         except Exception as exc:
+            response.failure_category=getattr(exc,'category','model_runtime_error')
             response.status='generator_error';response.warnings.append('Generator failed: '+type(exc).__name__)
         else:
             errors=self.validator.validate(result.claims,evidence)
             if errors:
+                response.failure_category='invalid_citation'
                 response.status='invalid_output';response.warnings.extend(errors)
             elif result.abstain or result.missing_context or not result.claims:
+                response.failure_category='missing_evidence'
                 response.status='insufficient_evidence';response.answerability='not_established'
                 response.warnings.extend(result.missing_context or ['Generator provided no supported draft'])
             else:

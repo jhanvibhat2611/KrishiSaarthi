@@ -12,8 +12,9 @@ sufficiency and factual verification remain unimplemented and uncalibrated.
 - `EvidenceSufficiencyChecker`: requires nonempty evidence plus a fresh question/
   evidence-bound review covering every requested component, applicability and no
   unresolved concerns. No gold or score thresholds. It only authorizes an attempt.
-- `PromptBuilder`: deterministic JSON source pack with explicit IDs, offsets, dates,
-  source metadata and constraints. Source/question text is untrusted data.
+- `PromptBuilder`: deterministic JSON source pack with request-local handles, dates,
+  applicability metadata and constraints. The application retains exact source IDs
+  and offsets; source/question text is untrusted data.
 - `Generator`: interchangeable interface. `MockGenerator` returns clearly marked
   excerpts, not factual answers. `MLXGenerator` is optional and local-only.
 - `CitationValidator`: checks provided passage IDs, canonical offsets and exact
@@ -27,7 +28,7 @@ sufficiency and factual verification remain unimplemented and uncalibrated.
 `answerability`, `generated_answer`, `claims` with citations, `sources`, `warnings`,
 `factual_verification` and `diagnostics`. Sources preserve document metadata,
 physical page references and passage metadata (including printed-page information
-when available). The generated answer is assembled only from structured claims;
+when available). The MLX handle response is resolved into application-owned citations. The generated answer is assembled only from structured claims;
 there is no uncited free-form answer field from the generator.
 
 Statuses: `insufficient_evidence`, `review_required`, `invalid_output`,
@@ -129,3 +130,93 @@ source text or applicability conditions. A budget failure is explicit and must
 be saved as a stopped attempt; retries use a fresh output directory. Report raw
 outputs and failures, including unsupported claims despite structurally valid
 citations. A model's own abstention/confidence is not an entailment verifier.
+
+## Phase 4.1: application-managed evidence handles
+
+The current prompt version is `source-grounded-handles-v1`. For each request,
+retrieval order defines E1, E2, ...; the same evidence pack/order produces the same
+handles. Handles are request-local, not document IDs, passage IDs or gold IDs.
+The application retains complete validated passages, source hashes, canonical
+intervals, page references and metadata. The MLX generator returns only:
+
+```json
+{"answer_status":"draft","answer_text":"Synthetic claim.","claims":[{"text":"Synthetic claim.","evidence_handles":["E1"]}],"uncertainty":[]}
+```
+
+`answer_text` must equal the claim texts joined with newline, preventing an
+additional uncited answer field. An insufficient-evidence response requires empty
+answer text and claims, with explicit uncertainty. The resolver rejects unknown,
+malformed or repeated handles and constructs full-passage citations from trusted
+metadata. The existing exact quote/offset validator still runs. Whole-passage
+citation scope is structural provenance, not claim-level entailment or verified
+minimal supporting evidence. The source text is never rewritten.
+
+The installed MLX runtime is used with strict JSON/schema validation; no constrained
+JSON decoder has been established here. This experiment permits **zero formatting
+repair attempts** (within the maximum of one); it never silently repairs facts,
+handles or quotations. `failure_category` distinguishes `model_runtime_error`,
+`output_length_exhaustion`, `invalid_json`, `schema_failure`, `invalid_citation`
+and `missing_evidence`. `status=review_required` identifies a candidate requiring
+factual review. A generator failure is never counted as an abstention. The existing
+broad status fields remain compatible; inspect the category for the exact failure.
+
+To run the comparison offline, first prepare rankings in the baseline environment:
+
+```sh
+.venv/bin/python scripts/run_rag_reliability.py prepare \
+  --queries data/<questions-only>.jsonl --output data/<fresh-retrieval-directory>
+.venv-rag/bin/python scripts/run_rag_reliability.py generate \
+  --queries data/<questions-only>.jsonl \
+  --rankings data/<fresh-retrieval-directory>/rankings.json \
+  --output data/<fresh-generation-directory> \
+  --model-dir data/models/qwen3-4b-mlx/50d427756c6b1b2fe0c0a10f67fbda1fc8e82c1b
+```
+
+Preparation uses pinned local E5 on CPU, batch 2, then exits before Qwen loads.
+Generation replays query/corpus-bound complete rankings through the Retriever
+interface and validates selected provenance. Both arms use Top-5, the identical
+prompt template, temperature 0, seed 0 and 768 output tokens; only evidence differs.
+All selected query records contain questions only; neither stage reads gold labels.
+The report may inspect evidence completeness afterwards, separately from inference.
+Language quality and factual support require human review. Original experiments
+remain unchanged; new output directories must be fresh and Git-ignored.
+
+## Phase 4.2: optional candidate selection followed by short claims
+
+`TwoStageGenerator` is a separate, opt-in research generator wrapping the existing
+pinned MLX loader. The conservative pipeline's review gate is unchanged. Invoke
+`scripts/run_rag_reliability.py generate --two-stage` with the same arguments and
+a new ignored output directory to use it. Reuse the frozen ranking snapshot so
+this comparison changes generation, not retrieval. No new model is downloaded.
+
+Stage A emits `{status, handles, reason}` with candidate/insufficient/uncertain.
+Candidate selection is a model proposal, never a verification result. Stage B sees
+only selected passages, with their original request-local handles and applicability
+metadata, and emits `{status, claims, reason}`. Each claim has text and evidence
+handles. There is no repeated answer_text: the application assembles the response
+from the claims. Stage B can still abstain or report uncertainty. Unknown or
+unselected handles fail validation. Source IDs, full exact quotations and canonical
+intervals remain application-owned and pass the existing citation validator.
+
+Fixed budgets: 192 Stage-A tokens, 384 Stage-B tokens, temperature 0, seed 0, same
+8192 context budget and pinned chat template. Stops are model EOS, output cap, or
+six consecutive identical whitespace-token blocks of length 1–8. The repetition
+guard is an engineering stop, not a faithfulness classifier. It may miss other
+forms of repetition. No repairs or retries. Complete stage prompts, raw outputs,
+selected handles, parsed records, termination reasons and resource metrics are
+saved. Runtime/JSON/schema/citation/status/repetition/output-cap failures remain
+separate. `uncertain` is retained in the stage record and response warning even
+though the public response's conservative status is `insufficient_evidence`.
+
+Inspection of pinned mlx-lm 0.26.3's generate.py and sample_utils.py finds general
+logits processors, but no integrated JSON-schema or grammar-constrained decoder.
+That hook alone does not establish a reliable JSON implementation. No grammar
+library or major dependency was added. `constrained_json=True` explicitly raises
+NotImplementedError instead of silently claiming constrained generation.
+
+Phase 4.2 compares this fixed bundled design, not isolated causal effects of each
+prompt/budget change. Stage selection and shortened generation are potential new
+failure points. Claim-support and language assessments are assistant observations
+for human review, not independent verification. If Hindi/Hinglish remain unreliable,
+stop prompt tweaking and propose a separately approved controlled generator-model
+comparison, retaining the same evidence and review rubric.

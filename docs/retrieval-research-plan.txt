@@ -1,0 +1,131 @@
+Phase 5 retrieval research proposal — NOT IMPLEMENTED
+
+Scope and separation
+Freeze generation. Preserve lexical, dense and RRF baselines. Existing signed pilot
+and pending code-mixing variants are development/stress material only. A copied
+signed question does not transfer approval to a new annotation artifact. No new
+variant is eligible for evaluation before its semantic and evidence review.
+The retrieval method below is a hypothesis, not a validated contribution.
+
+Observable features
+Use query text, source collection, candidate text, saved/returned scores and ranks.
+Never consult gold evidence, answerability labels or expected answers at inference.
+Count exact casefolded alphabetic content-token matches after excluding punctuation,
+units, numeric tokens, function words and generic crop/field words. Record numeric
+matches separately; numbers alone never establish lexical reliability. An English
+corpus vocabulary match is a proxy, not an English language detector. Report script
+fractions over letters; Latin script alone does not distinguish English/Hinglish.
+Use a corpus-derived, reviewed entity catalog frozen before held-out questions are
+revealed. The pilot's assistant-defined taxonomy is descriptive, not a deployable
+validated resource. Exact entities can be incidental and spelling variation can
+miss them. Do not derive the lexicon or exclusions from held-out query text.
+
+Minimal proposed algorithm: selective lexical contribution to RRF
+Run a chosen dense backbone D and unchanged BM25 B. For each candidate p define:
+ M(q,p) = number of distinct exact non-generic content-token matches;
+ E(q,p) = 1 if a complete reviewed named entity occurs in both query and p, else 0;
+ g(q,p) = 1[BM25(q,p)>0] * 1[M(q,p)>=2 OR E(q,p)=1].
+The threshold 2 is a transparent proposed heuristic, not a tuned pilot result.
+ S(q,p) = 1/(60+r_D(p)) + g(q,p)/(60+r_B(p)).
+Missing ranks contribute zero. Preserve original component ranks, not re-ranked
+positions after filtering. Deduplicate IDs, reject inconsistent provenance and
+sort by descending S then stable passage ID. For the current pilot use complete
+15-passage lists; for future corpora preregister the same candidate budget for all
+fusion baselines (proposed 100 per component) and measure candidate recall separately.
+Do not present truncation differences as fusion gains.
+
+This is candidate-level filtering, not a factual-support or answerability check.
+If all gates are zero, return the dense ordering. Unknown entity/feature state
+counts as absent evidence for a lexical boost; malformed provenance is a hard
+error. Log feature failures and fallback; a missing dense backend fails the run,
+not an unreported switch to BM25. No confidence or clinical/agronomic sufficiency
+is inferred from cosine or a positive lexical score. Shared entity names can still
+boost irrelevant passages; lower-overlap relevant passages may lose helpful boosts.
+
+Comparisons and ablations (same corpus, labels, ranks, K and provenance)
+Evaluate each dense backbone independently: E5 and BGE-M3 dense-only; equal-weight
+standard RRF; non-positive-score-gated RRF; the proposed method. Script router:
+Devanagari-majority letters -> dense, otherwise standard RRF, with a declared
+majority rule and unknown -> dense. Separately compare explicit language-tag routing
+(hi -> dense; en/hinglish -> standard RRF) only where a language tag is supplied;
+otherwise language inference is another measured component, not an oracle.
+Ablate: punctuation exclusion only; content filtering without entities; entity-only;
+query-level gating (any reliable Top-5 candidate -> standard RRF for whole list);
+full candidate gate; optional script gate added to full method. Keep k=60 fixed.
+Report all ablations, not just the best. Do not tune thresholds on signed pilot.
+If exploring thresholds {1,2,3}, do so only on development evidence families, freeze
+one setting before held-out evaluation, and report the selection procedure.
+
+Falsifiable hypothesis and primary endpoint
+On independently authored held-out Hindi and Hinglish needs, the prespecified
+reliability method will improve group-macro complete_evidence_coverage_at_3 by at
+least 0.05 absolute versus each corresponding dense, standard RRF, zero-score-gated
+RRF and script-routing baseline, with English loss no greater than 0.02 absolute.
+These are proposed practical margins, not estimated effects or power claims.
+Failure against any comparator, uncertain intervals or an English guardrail breach
+prevents the stated broad superiority claim. Report backbone-specific failure too;
+do not choose the winning backbone after observing test labels. Separate hypothesis
+family for language-tag router if used. Multi-span ALL coverage is the primary
+research target; overlap and script features alone are not the contribution.
+
+Related work and novelty boundary
+Query-Adaptive Hybrid Search (2026) already predicts per-query lexical/dense mixing
+and uses antagonist negative sampling in its training framework; adaptive weighting
+is established. Author implementation: https://github.com/madosh/query-adaptive-hybrid-search
+Paper DOI: https://doi.org/10.3390/make8040091
+Code-Switching Information Retrieval (Findings ACL 2026) introduces CSR-L and CS-MTEB,
+analyzes mixed-language retrieval degradation across retriever families, and finds
+vocabulary expansion insufficient. https://aclanthology.org/2026.findings-acl.636/
+Our intended narrower test is whether observable lexical reliability predicts when
+fusion damages complete multi-span evidence recovery under controlled Hindi script,
+Romanization and keyword perturbations in regional wheat documents. Neither this
+framing nor a binary gate proves novelty. The mechanism is simple selective fusion.
+Need broader literature review, head-to-head feasible baselines and independent
+held-out evidence before claiming a contribution. These two comparisons are not an
+exhaustive novelty search. No new algorithmic originality is claimed.
+
+Independent benchmark proposal — acquisition/annotation not authorized here
+Target 8–12 official English wheat-management documents, with reuse/provenance
+review, multiple sources/regions, six management topics and conflicting/conditional
+recommendations retained as separate source-scoped evidence. Use existing approved
+additional documents first if suitable; acquire no documents automatically.
+Target 60 development and 120 held-out answerable information needs, plus 15 dev
+and 30 held-out corpus-relative unanswerable needs. Author EN, Hindi and natural
+Hinglish variants per need (225 dev and 450 held-out queries). At least 40 held-out
+answerable needs should require multiple spans. Additional controlled spelling/
+keyword/script variants stay clustered with their parent, never cross splits.
+These are recruitment targets; power depends on paired disagreements, not raw query
+count. Do not lower the target or change the hypothesis after seeing test outcomes.
+
+Before authoring test questions, cluster source sections by evidence family:
+duplicated recommendations, cultivar facts, conditions, related multi-span chains,
+and cross-document paraphrases. Block duplicates and connected families into one
+split; hold out documents/sections where feasible. Same retrieval collection may
+contain all approved evidence, but no question/evidence-family supervision crosses
+splits. Freeze collection, split manifest and feature resources before test access.
+Unsupervised collection vocabulary/IDF is permitted; no test-label-derived entities.
+Independent authors must not see pilot queries, model rankings or method outputs.
+
+Annotation: establish rights and quality; review source regions; author natural
+needs; bilingual reviewer checks equivalence, numbers, units, crop, place and date;
+second reviewer maps minimal canonical spans and ALL requirements; adjudicate
+conflicts with actual identities/times. For unanswerable needs, inspect the full
+frozen collection and record the missing requirement. Do not infer absence in all
+agricultural knowledge. Freeze signed spans, source hashes and query hashes.
+No automatic label inheritance or assistant-as-human approval.
+
+Metrics/uncertainty
+Primary complete evidence coverage@3; secondary Recall@1/3/5, unchanged cumulative
+evidence MRR@1/3/5, complete coverage@1/5, latency and subgroup breakdowns. Explicit
+unanswerables remain in diagnostics but outside positive-evidence retrieval means.
+Group-macro averages prevent weighting a need more because it has more variants.
+Report multi-span and single-span subsets separately, language and overlap strata.
+Use paired bootstrap over evidence-family clusters (all language variants travel
+together), 10,000 replicates with fixed seed; report paired 95% intervals and counts.
+Report per-language intervals and guardrail uncertainty. If making formal tests,
+preregister Holm correction for planned primary baseline contrasts across backbones;
+no significance claims from current pilot. Assess achievable precision from dev
+paired-disagreement rates before sealing the test set; increase collection targets
+before unblinding if needed. Small document/family counts limit generalizability even
+with many query variants. Preserve an untouched final test; future changes need a
+new test set or explicitly exploratory reuse designation.

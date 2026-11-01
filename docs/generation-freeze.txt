@@ -1,0 +1,22 @@
+Generation architecture freeze — Phase 5
+
+The existing conservative default, application-managed evidence handles, strict
+source validation, optional research-draft mode and two-stage local MLX generator
+are frozen for retrieval research. No additional prompt tuning, generator download
+or generator replacement is part of Phase 5.
+
+Known limitations: syntactically valid citations establish only that evidence was
+provided, not that it entails a claim. Candidate evidence selection is fallible;
+missing evidence, incomplete answers and incorrect uncertainty explanations remain
+possible. Hindi and Romanized Hindi output has shown repetition, meaning changes
+and output-contract failures. Structured success is not factual success. Runtime,
+length exhaustion, repetition, invalid JSON, schema and citation failures must
+remain distinct from successful abstentions. Generated drafts need human review.
+The pinned MLX integration has no integrated JSON-schema constrained decoder;
+no additional grammar dependency has been approved.
+
+Local Phase 4.1 and 4.2 reports and raw outputs remain immutable under ignored data/.
+The repository contains reusable implementation and synthetic tests only. Never
+publish source passages, annotations, generated answers or experiment outputs as
+part of a code checkpoint. Reopening generation requires a separate controlled
+model-comparison proposal and approval, not another round of pilot prompt tuning.

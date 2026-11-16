@@ -1,0 +1,96 @@
+QA-C4: private human evaluation of the completed QA-C3 run
+
+Start from the repository root:
+  PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src .venv/bin/python scripts/qa_human_review.py serve
+Then open http://127.0.0.1:8774/review.html
+
+Prepared HTML:
+  data/qa-c4-human-review-v1/review.html
+Opening that file directly permits inspection, but protected export requires the
+localhost server above. The server binds only 127.0.0.1, has no request logging,
+serves only the review page, and accepts exports only from the same local origin
+with the session token. It does not load models, retrieve evidence, or score answers.
+
+Review procedure
+1. Enter your own reviewer identifier. None is filled automatically.
+2. Choose “Six RAG draft pairs first” to prioritize detailed claim inspection.
+3. Read the question and requested language. Compare each arm independently.
+4. Expand the evidence handle next to each RAG claim. Inspect canonical text,
+   document/passage identity, page references, offsets and source qualifications.
+   Structural resolution is a machine diagnostic, never a factual-support score.
+5. Select all four response ratings and every applicable claim-citation rating.
+   Use Uncertain or N/A explicitly where warranted. Keep notes on uncertainties,
+   conditions, quantities and language. Direct supplied-evidence citations are N/A.
+6. Review model reasons as well as claims. Withholding explanations can contain
+   unsupported assertions. Generation failures remain failures even when raw text
+   looks answer-like; do not count them as successful abstentions.
+7. For IN10 English/Hinglish, inspect both disease descriptions and completeness.
+   For IN14, inspect the entire 15-passage corpus panel, not only the Top-5.
+   No reference drafts, gold answers or external factual verification are included.
+8. Check “I have personally reviewed...” only after inspecting that response.
+   Editing any score or note clears that record's completion checkbox.
+9. Export current decisions. Partial exports are allowed. The server saves an
+   immutable, uniquely named JSON file under data/qa-c4-human-review-v1/exports/.
+   Directory mode is 0700 and files are 0600. Export contains decisions and source
+   fingerprint bindings, not duplicated raw output or source passages.
+10. Before closing/reloading, export your work. To resume, choose the saved JSON
+    with “Resume an exported review”. Its package identity, pairs, rating values
+    and citation handles are checked. No JSON editing is necessary.
+
+All 24 review records initially have blank ratings, notes and unchecked completion.
+The export timestamp records the explicit export action, not an invented time of
+individual human review. Export does not approve QA references, admit evidence,
+publish results or certify agricultural correctness. Unsupported by the corpus is
+not equivalent to externally verified false. The latter remains unassigned.
+
+Verified original outcomes (12 attempts per arm):
+  Direct: 8 valid structures, 0 answer drafts, 8 withholding, 4 failures.
+  RAG:   10 valid structures, 6 answer drafts, 4 withholding, 2 failures.
+Failure counts remain in the original denominator; they are not reconstructed.
+
+Integrity checks
+- Run completion marker, authorization/run directory and proposal identity.
+- Execution-code fingerprints, original journal/result equality for all 24 calls.
+- Handoff hash; exact frozen source/question binding through existing validators.
+- All 12 original E5 rankings; no fresh searches or replacement evidence.
+- Prompt equality/hashes; evidence fingerprints; valid output parsing and exact
+  application-resolved citation equality. Failed output is preserved verbatim.
+- Current run artifact hashes captured in the review binding. These hashes bind
+  this review snapshot; they are not retroactively invented historical signatures.
+- All 1,372 pre-existing research-data files monitored before preparation remained
+  byte-identical (weights and embedding caches were not accessed by this task).
+
+Focused validation
+  PYTHONDONTWRITEBYTECODE=1 .venv/bin/python -m pytest -p no:cacheprovider \
+    tests/test_qa_human_review.py tests/test_qa_adapters.py \
+    tests/test_qa_runtime.py tests/test_qa_real_safeguards.py -q
+  Result: 63 passed, including 25 new review tests.
+
+  NODE_PATH=/Users/jhanvibhat/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules \
+    /Users/jhanvibhat/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node \
+    --test tests/qa_review.test.cjs
+  Result: 7 synthetic browser tests passed using existing local Chrome/Playwright.
+  No dependency installation. The first sandboxed Chrome launch was blocked;
+  subsequent authorized local tests exposed/fixed mobile overflow and field labels.
+  Final read-only browser inspection: 12 pairs, 24 arms, no page errors, all scores
+  blank, no checked completion boxes, exact raw-output preservation, no mobile
+  page overflow. Screenshots remain inside the protected review directory.
+
+New code/documentation paths (no existing modules or UI files changed):
+  src/krishisaarthi/evaluation/qa_human_review.py
+  src/krishisaarthi/evaluation/qa_review.html
+  scripts/qa_human_review.py
+  tests/test_qa_human_review.py
+  tests/qa_review.test.cjs
+  docs/qa-c4-human-review.txt
+The trackable HTML is only a blank template; all real text is injected into the
+Git-ignored generated package. No source excerpts or model output are in tests.
+
+Limitations
+- Named-arm side-by-side review is not blinded or an independent multi-rater study.
+- Human judgments are still pending; no accuracy or superiority conclusion follows.
+- In-tab edits are not autosaved. Export before closing; import to resume.
+- Local HTTP service must be running to export. Do not host the generated package
+  publicly, copy it into the frontend bundle, or share restricted artifacts.
+- No models loaded, inference/retrieval repeated, labels created, approvals altered,
+  Git operations performed, or external services used for evidence/outputs.

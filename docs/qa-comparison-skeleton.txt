@@ -1,0 +1,150 @@
+Direct LLM versus RAG: isolated FAKE-OUTPUT plumbing
+
+This is not a real comparison or model integration. No model backend is imported,
+constructed or called. The CLI has no model, dataset, reference or real-mode option.
+Existing generation, retrieval runners and UI remain unchanged.
+
+Run the built-in invented fixture (prints JSON; writes nothing by default):
+  PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src .venv-rag/bin/python scripts/run_fake_qa_comparison.py
+Optionally add --output data/<fresh-fake-comparison-directory> to save fake results
+and an EMPTY human-scoring.pending.json. Existing directories are rejected.
+
+Contracts
+- Direct prompt receives only text and language through the narrow Question type.
+  It receives no retrieved text, source IDs, reference answers or answerability.
+- RAG prompt receives the same question plus synthetic evidence text and local
+  handles. No references, required-fact rubric or gold labels enter either prompt.
+- SyntheticCase/Question/SyntheticEvidence reject extra metadata fields. Only the
+  built-in fixture is accessible through the CLI; no agricultural drafts are read.
+  Types and whitelisting prevent accidental field leakage, not arbitrary secrets
+  deliberately embedded by a caller inside question/evidence text.
+- The paired case/question identity, prompt versions/hashes, evidence fingerprint
+  and fixed intended budgets are saved. Budgets are metadata ONLY in fake mode:
+  no tokenization, truncation, real latency or memory measurements are claimed.
+- Supplied strings undergo strict duplicate-key/JSON/status/schema checks. Maximum
+  two claims. Missing/unknown/duplicate RAG handles are rejected; source references
+  are application-resolved synthetic intervals. Raw invalid outputs are retained.
+  FakeFailure permits explicit runtime/exhaustion/repetition fixtures, clearly
+  labeled simulated. No repairs, retries or confidence estimates.
+
+Scoring separation
+Both arms expose the same empty fields for human correctness, completeness,
+abstention appropriateness, language, conditions/units and unsupported claims.
+Reference hash, reference approval, reviewer identity and review timestamp are null.
+There is no score calculation, sign-off validator or automatic acceptance in this
+skeleton. A fake output cannot prove factual support, even when it repeats a fixture.
+Direct citation diagnostics are NOT APPLICABLE, not failed. RAG citation structure
+and claim-to-supplied-evidence support belong in separate diagnostics/review fields.
+Do not reuse retrieval Recall/MRR as answer correctness. Generated insufficiency is
+not a verified unanswerable label; generation errors are not successful abstentions.
+
+The empty scoring JSON requires manual editing/saving a separate reviewed copy;
+there is no UI, autosave, submission or gold exporter. Keep it empty for this demo.
+Actual QA references, including revised agricultural drafts, still require genuine
+human approval before reference-dependent scoring. They are not loaded here.
+
+Next approval boundary
+Approve an objective and reference rubric, sign the references, and separately
+approve integration of a real decoder and provenance-validated real evidence with
+equal declared budgets. First add fake tests for that boundary. Only then request
+an explicit bounded real-run authorization. Existing two-stage RAG makes extra calls;
+it must not be silently presented as an equal-call one-stage comparison. No current
+permission to run models, export gold or alter the frozen research architecture.
+
+Focused tests (synthetic only):
+  PYTHONDONTWRITEBYTECODE=1 .venv-rag/bin/python -m pytest -p no:cacheprovider tests/test_qa_comparison_fake.py -q
+
+QA-C1 PREPARATION — PROPOSED / UNAPPROVED, not a frozen scientific protocol
+
+configs/qa-c1.proposed.json records the proposed twelve development variants
+(IN-06/07/10/14, en/hi/hinglish), existing corpus/index identifiers and pinned
+Qwen/MLX config identity. Identifiers/paths are metadata, not instructions to open
+corpus files, encode passages, build an index or load a model. selected_retriever
+is deliberately null; BM25 versus existing E5 and Top-5 still need confirmation.
+The referenced index identifier describes the existing pilot BM25 artifact; it
+does not select BM25 for a future RAG arm. No held-source material is eligible.
+
+Proposed arms: Direct gets query/language and shared general instructions; RAG
+gets the same plus retrieved evidence, with one generation stage. The common
+instruction prefix and arm-specific source/citation rules have separate hashes.
+Direct does not receive the corpus identifier, labels, QA references or expected
+evidence in its prompt. Neither arm receives reference-derived answerability.
+
+Proposed budget: 12 Direct + 12 single-stage RAG calls, 384 maximum new tokens per
+call, 9,216 maximum new tokens overall, temperature 0, seed 0, batch 1, context
+limit 8,192, no repairs/retries. All settings are unapproved. The existing pinned
+MLX configuration is NOT edited; 384 would be an explicitly approved override,
+not its current default. The legacy fake demo retains 256-token placeholder
+metadata. Preparation does not silently replace it or any historical run setting.
+Equal call/output caps do not imply equal prompt tokens or total compute. Future
+real execution must record actual prompt/generated tokens, latency, configuration
+and failure reason, reject oversize input instead of silently truncating, and
+stop on resource/runtime failure. None of that is measured by supplied fake text.
+
+Generate the proposal + empty 24-slot review form alongside an unrelated one-case
+synthetic demonstration (no twelve-question agricultural execution):
+  PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src .venv-rag/bin/python scripts/run_fake_qa_comparison.py --prepare-qa-c1 --output data/<fresh-qa-c1-preparation>
+Without --output this prints only. There is still no real-model, retriever or
+dataset-input CLI option. The CLI reads only the declarative proposal JSON; it
+never dereferences paths listed in that JSON. Real execution is unavailable.
+
+Attempt and denominator accounting
+The proposal has 24 planned question-arm slots, zero actual model attempts and
+zero simulated attempts. Its future token cap is not observed compute. The separate
+synthetic demo consumes two supplied fake outputs; those are simulated attempts,
+not actual calls. Never combine its numerator with the 24-slot proposal denominator.
+account_fake_attempts validates a fixed case/language/arm plan; duplicate, unknown
+or inconsistent observations fail. Missing observations become not_attempted slots.
+The primary completion denominator is ALL planned slots, including failures and
+unattempted slots. Also report simulated attempts and completions separately,
+per-arm and paired-case. A completed malformed response counts as a completed
+response, but not structurally valid. Runtime/length/repetition stops are incomplete
+responses; their partial raw output remains retained. Structured-valid means
+schema/status-valid BEFORE citation checks: an invalid citation can follow valid
+structure but still suppress the answer. It is never a released valid draft.
+Deliberate withholding (insufficient/uncertain), failure-suppressed answers, and
+substantive answer drafts are separate counts. No failure is successful abstention;
+no draft count establishes correctness. Human and reference-dependent scores stay
+null. No automatic score/label conversion or human approval is implemented.
+
+Blank rubric (options only, never preselected judgments)
+A corpus-grounded support: fully supported / partially supported / unsupported
+  by authorized corpus / uncertain-requires inspection.
+B completeness: complete / partially complete / incomplete.
+C corpus-relative answerability: appropriate answer / appropriate abstention /
+  unsupported answer / incorrect withholding / uncertain.
+D language: appropriate requested English/Hindi/Hinglish / partly appropriate /
+  inappropriate or unintelligible.
+E RAG supplied-evidence citation structure and separate human claim-to-evidence
+  support. Direct supplied-evidence applicability is N/A; all human judgments
+  (including citation judgments) remain null. Required facts, quantities/units
+  and cultivation conditions have separate empty checks. Reference approval,
+  reviewer identity, timestamp and approval fields remain empty.
+Corpus-unsupported is not automatically externally false or hallucinated. Compare
+content under the declared source-bounded task; do not penalize Direct for missing
+citations to unseen evidence, or treat LLM self-evaluation as independent review.
+
+Existing connection points (read-only; no integration in QA-C1)
+- rag/two_stage.py MLXTextBackend: pinned local decoder, bounded output and metrics.
+  Reusing its decoder does not authorize TwoStageGenerator or change that pipeline.
+- rag/evidence.py EvidenceSelector and retrieval/base.py Retriever: provenance and
+  existing retriever boundary. No golden-span passage selection is permitted.
+- scripts/run_rag_reliability.py RankingSnapshot: query/corpus-bound saved rankings;
+  validate identity before any separately approved replay integration.
+- configs/mlx-generator.json: pinned checkpoint/tokenizer/dependencies/file hashes.
+- evaluation/runner.py: retrieval metrics only; never silently repurpose as QA scoring.
+No integration has been made. Existing two-stage RAG stays frozen; two calls per
+question would be a different experiment and require explicit budget treatment.
+
+Remaining human decisions/permissions, consolidated
+1 Approve the corpus-grounded comparison objective and independent human rubric;
+  clarify scoring of closed-book claims absent from this corpus, not global truth.
+2 Genuinely review/sign all twelve revised QA-reference candidates; no approval
+  inherits from signed retrieval questions or assistant review. Resolve rubric
+  language/equivalence and required-fact checks before reference-dependent scoring.
+3 Select one existing retriever/config and Top-K; approve the proposed prompts,
+  one-stage call design and 384-token/24-call budget. Do not tune on held-out needs.
+4 Separately approve material decoder/retriever integration and source use after
+  reviewing its exact scope and fake tests. No new models or dependencies implied.
+5 After the above gates, explicitly authorize the bounded real run. QA-C1 itself
+  authorizes no calls, source acquisition, gold export, Git mutation or UI activation.

@@ -1,0 +1,140 @@
+QA comparison readiness — preparation only
+
+This supplements docs/qa-comparison-skeleton.txt; the earlier QA-C1 proposal and
+saved artifacts remain unchanged. The current proposed retrieval choice is pinned
+E5, Top-K=5, not the earlier null/BM25 placeholder. No actual inference, retrieval,
+new labels, reference scoring or automatic human approvals are implemented here.
+
+Already present and reused
+- qa_comparison_fake.py: narrow Question input, Direct/RAG prompts, strict JSON,
+  status/schema checks, application-managed synthetic E-handles, raw outputs,
+  distinct generation/parser/citation failures, planned-slot denominators and
+  blank human scoring forms. No model or retrieval dependencies are imported.
+- QA-reference-draft-v2: twelve development candidates across IN06/07/10/14 in
+  English/Hindi/Hinglish. All twelve human decisions are still pending. Its
+  candidate SHA256 is 44d3e07db2dc874e42163ccac8e575fdbe8d96a3523a101e56cbe7aadda11681.
+  Original drafts, candidate IDs, review forms and evidence spans are unchanged.
+- MLXTextBackend.decode in rag/two_stage.py: existing pinned loader, chat template,
+  raw output, token/runtime/memory metrics, output-limit/repetition guards. Reuse
+  this decoder later, NOT TwoStageGenerator. No decoder is instantiated here.
+- ui/local.py LocalRetrieval/CachedE5: source/provenance validation and read-only
+  cached 15-passage retrieval. Existing UI and backend remain untouched.
+
+Prepared now
+- configs/qa-readiness-e5.proposed.json: new pending proposal with exact existing
+  E5 model/tokenizer revision, embedding-cache key/manifest hash, retriever identity,
+  Qwen revision/config hash/package pins, twelve case identities and shared budgets.
+  Paths identify existing artifacts; the preparation CLI never dereferences them.
+- evaluation/qa_readiness.py: reuses original prompt/parser/accounting code; adds
+  validated simulated telemetry and explicit input-budget differences. Runtime
+  values may be null when unavailable; no invented zero latency or token counts.
+  Raw failures are preserved and cannot become successful abstentions. Fake
+  token/latency values live under SIMULATED_NOT_MODEL_MEASUREMENTS; measured fields
+  stay null. Legacy fake-demo 256-token metadata remains untouched; the new
+  readiness artifact explicitly declares its own 384-token budget.
+- scripts/prepare_qa_readiness.py: produces a declarative proposal, empty 24-row
+  human form and three unrelated invented multilingual fixture pairs. These six
+  supplied fake outputs are NOT runs of the twelve agricultural development cases.
+  No dataset-input, model, retrieval or real-execution switch is available.
+- tests/test_qa_readiness.py: synthetic-only tests alongside existing skeleton tests.
+
+Reproduce preparation (choose a fresh ignored directory; no overwrite)
+  PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src .venv-rag/bin/python scripts/prepare_qa_readiness.py --output data/<fresh-readiness-directory>
+  PYTHONDONTWRITEBYTECODE=1 .venv-rag/bin/python -m pytest -p no:cacheprovider tests/test_qa_comparison_fake.py tests/test_qa_readiness.py -q
+
+This milestone: 71 focused tests passed. The first run caught a positional-versus-
+keyword invocation error in the new wrapper; fixed before the passing run. No full
+suite rerun is claimed for this preparation-only milestone. A subprocess test blocks
+research-data reads and verifies no torch/transformers/mlx/mlx_lm import during
+preparation. The existing comparison module, UI, model adapters and research inputs
+were not edited. No dependencies were introduced.
+
+Proposed future real-run configuration (NOT execution authorization)
+- Development: IN06, IN07, IN10, IN14 x en/hi/hinglish = 12 cases / four needs.
+- Direct: question and requested language only, plus common general/output rules.
+  No retrieved evidence, corpus identity, expected facts, labels or references.
+- One-stage RAG: identical question/language plus E5 Top-5 evidence, ordered E1–E5.
+  No candidate-selection model stage; one generation call per question-arm.
+  Preserve source date, region, conditions and missing-context warnings in sources.
+  Keep document IDs/pages/offsets/source hashes application-managed for citations.
+- Qwen: mlx-community/Qwen3-4B-Instruct-2507-4bit at
+  50d427756c6b1b2fe0c0a10f67fbda1fc8e82c1b (same tokenizer revision).
+- MLX 0.26.5, mlx-lm 0.26.3, transformers 4.57.1; existing checkpoint validation.
+- Same pinned tokenizer chat template, tokenize=True, add_generation_prompt=True;
+  temperature 0, seed 0 per call, batch 1, prefill step 256.
+- 384 maximum NEW tokens per call, 12 calls per arm, 24 overall, <=9,216 NEW tokens.
+  Existing generator config remains 512 by default; 384 is an explicit proposed
+  comparison override, never a change to historical defaults or results.
+- Context 8,192, reserve 384 output tokens: each formatted prompt <=7,808 tokens.
+  No truncation, passage dropping, retries, formatting repairs or model fallback.
+  Preflight BOTH arms before either generation. If either overflows, block the
+  pair; retain both planned slots as unattempted with a preflight reason. Stop on
+  unsafe memory/runtime failure, keeping partial output and remaining unattempted
+  slots. A preflight failure is not an abstention or a model response.
+- E5: intfloat/multilingual-e5-base at d128750597153bb5987e10b1c3493a34e5a4502a,
+  same tokenizer revision, frozen CPU float32 cache identity, fixed Top-K=5.
+- PAU corpus a919560be507b862be119a236fd1d2501f8d7c32d8fe6ea4951114b205f8c88a.
+  No held Assam/ICAR/Meghalaya material. Source use remains restricted/local.
+
+Recording and fairness
+Both arms must record exact submitted prompt/hash, raw output (including partial
+failures), parsed status, citation validity, finish reason, generated token count,
+chat-template input count/hash, generation latency, model/config fingerprints and
+peak memory. Record retrieval and model-load latency separately from decode time;
+report end-to-end costs too. On failure, unavailable measurements stay null, with
+failure stage recorded. Capture backend metrics in finally, including prefill errors
+that occur before MLXTextBackend's current try/finally. No current adapter wiring
+is provided, and exact token counts are not measured in this milestone.
+
+Equal calls/output caps do not equalize input tokens, prefill time, total compute
+or prompt difficulty. RAG adds evidence and citation-formatting burden. Retain the
+common prompt prefix and separately hash the source-policy instructions. Record
+both prompt counts and RAG-minus-Direct difference; do not pad Direct artificially.
+At future execution, prefer serialized phases: retrieve/cache validated evidence
+locally, unload E5, then load Qwen once for paired generation. This avoids retaining
+Torch and MLX model weights together. Neither stage is executed here.
+
+Primary denominators: all 24 planned question-arm slots (12 per arm; 4 per language
+per arm), including unattempted slots and failed generations. Also report 12 paired
+cases, attempted calls, completed responses, structured-valid responses, usable
+answer drafts, insufficient/uncertain outputs and each failure category separately.
+A completed malformed JSON string is a response, not valid output. A citation
+failure can follow valid JSON but is not a usable sourced draft. Never remove
+failure cases from the headline denominator; conditional rates must name their
+smaller denominator. Token/time totals need observed-count denominators when nulls
+exist. No current fake numerator is combined with the 24-case proposal denominator.
+
+Human review and outstanding approvals
+1 Review all 12 QA-reference candidates in data/qa-reference-draft-v2/review.html;
+  save actual judgments separately using reviewer-decisions.pending.json and its
+  existing schema. No inherited approval from retrieval annotation sign-off.
+2 Confirm the corpus-bounded review objective/rubric. Unsupported by this tiny
+  corpus is not necessarily externally false, especially for closed-book Direct.
+  IN14 absence is corpus-relative. Review factual support, completeness,
+  answerability/withholding and language separately; Direct supplied-evidence
+  citations are N/A, not a failed citation score. RAG citation structure is
+  distinct from human claim support. IN10 requires both descriptions for a
+  complete answer. No reference-dependent scores until genuine approval.
+3 Approve final paired prompts, 384-token cap, fixed two-claim output contract and
+  single-call design. The two-claim cap may constrain complex answers; declare it
+  before execution, not after inspecting model failures. Reference answers never
+  enter inference inputs, even after approval.
+4 Separately approve real decoder/retriever integration and bounded execution.
+  This request approves preparation only; selected E5/Top-5 is already the stated
+  plan, not a choice needing repetition. No checkpoint download is needed.
+
+Unresolved integration risks
+- Qwen's prior Hindi/Hinglish reliability limits remain. No quality improvement is
+  demonstrated by fake fixtures. Greedy/seeded decoding is not a cross-hardware
+  bitwise guarantee. Structural citations are not factual verification.
+- .venv has Torch retrieval; .venv-rag has MLX. Do not silently merge dependencies.
+  A later approved runner should bridge validated local records between processes
+  or explicitly verify a compatible environment; no environment change here.
+- The fake RAG builder accepts synthetic text only. A future reviewed adapter must
+  retain source scope/conditions and exact canonical citations from LocalRetrieval;
+  do not relabel PAU text as synthetic or use synthetic zero-based offsets on it.
+- Both prompts must fit Qwen's template budget; no real tokenization has run.
+  Retrieval completeness is not assumed from five hits. No gold-guided selection.
+- No human-review scorer, automatic gold exporter or real comparison runner is
+  introduced. Human fields stay blank. The twelve cases are development material,
+  not an independent benchmark and not twelve independent information needs.

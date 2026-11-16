@@ -17,7 +17,10 @@ the frozen pilot contains Punjab-specific, source-dated English evidence.
   Generator interface, deterministic mock, CitationValidator and RAGPipeline.
 - Optional pinned local MLX adapter with offline checkpoint validation and measured local inference support.
 
-No training, query translation/normalization, frontend, voice or image analysis is
+- Local cream-and-green evidence UI with read-only frozen PAU E5 retrieval (Top-K=5)
+  and an explicitly selected synthetic fallback; see [launch instructions](docs/retrieval-ui.md).
+
+No training, query translation/normalization, voice or image analysis is
 implemented. Historical retrieval experiments remain separate from RAG. Public
 source code/tests contain synthetic fixtures; research documents, extracted text,
 annotations, weights and experiment outputs remain local under ignored `data/`.
@@ -124,3 +127,9 @@ conditions. Do not infer chemical recommendations or diagnosis from missing evid
 Raw/restricted artifacts must not be force-added to Git. No commit/push is automatic.
 The checkpoint includes source, configurations, dependency pins and synthetic tests;
 new questions require genuine review before export or labeled evaluation.
+
+## Parameterized approved-corpus benchmark
+
+See [parameterized benchmark](docs/parameterized-benchmark.md) for configuration,
+strict approved-snapshot loading, evidence-family split validation and separate
+group-macro complete-evidence reporting. Original pilot runners and results remain unchanged.

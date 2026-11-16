@@ -1,0 +1,112 @@
+QA-C3 conditional execution — completed once
+
+The attached user approval (SHA256 f26d204fcd4e12012547f0613695f105abcaf8cfb3aa1c7ec6ff66ed987614be)
+authorized four narrow corrections and one conditional bounded development run.
+That authorization is now consumed. Do not rerun, resume or retry this experiment.
+
+Code paths added/modified for this milestone:
+- src/krishisaarthi/evaluation/qa_adapters.py
+- src/krishisaarthi/evaluation/qa_runtime.py
+- src/krishisaarthi/evaluation/qa_journal.py (new)
+- src/krishisaarthi/evaluation/qa_real.py (new)
+- scripts/qa_runtime.py
+- scripts/qa_real_worker.py (new)
+- tests/test_qa_adapters.py
+- tests/test_qa_real_safeguards.py (new)
+- docs/qa-c3-execution.txt (new)
+
+Corrections
+Complete frozen documents.jsonl bytes are SHA256-pinned independently. All handoff
+document fields, including source/domain metadata, must exactly match independently
+loaded records. The runner also rejects altered EvidencePack document metadata.
+System prompts, two-claim output contract, Qwen revision and two-stage code did not change.
+
+AttemptJournal uses O_EXCL reservations, file fsync and directory fsync before each
+decode/retrieval, then durable atomic completion records. Existing uncertain,
+interrupted or completed reservations always consume their slot. A root-level
+single-authorization marker prevents restarting in a new directory. Worker stages
+also reserve once. No resumable real mode is offered.
+
+Timing/resource records separate E5 service initialization (including validation),
+retrieval, Qwen load, backend decode/prefill, surrounding call wall time, template
+input tokens, generated tokens, MLX peak allocation and process lifetime peak RSS.
+Fixed Direct-first ordering is explicit. Backend runtime/resource/telemetry failures
+halt following calls; format failures, output-length exhaustion and repetition remain
+failed outputs, never abstentions or repair opportunities. Safe preflight codes
+identify source_validation_failure, tokenization_failure and context_overflow.
+
+Tests
+109 focused synthetic tests passed before execution:
+  PYTHONDONTWRITEBYTECODE=1 .venv-rag/bin/python -m pytest -p no:cacheprovider tests/test_qa_comparison_fake.py tests/test_qa_readiness.py tests/test_qa_adapters.py tests/test_qa_runtime.py tests/test_qa_real_safeguards.py -q
+No real model calls were made by tests. No full-repository test rerun is claimed.
+
+Preflight: PASS
+Frozen source bytes, complete document metadata, canonical provenance, query snapshot,
+E5/Qwen checkpoints/tokenizers, private permissions, pinned packages, Metal/memory,
+journal writes and all 24 paired prompt budgets passed. Input lengths: 164–3203,
+below 7808. No truncation or evidence removal. No reference answers or gold labels
+were loaded into either arm. The E5 producer exited before Qwen loaded. The earlier
+local UI preview process was stopped to release its E5 model; UI source is unchanged.
+
+Actual execution
+12 E5 Top-5 searches; 12 Direct + 12 one-stage RAG Qwen decodes. All 24 reservations
+have final records; zero uncertain/interrupted slots, retries, repairs, warm-ups or
+additional generations. 5230 output tokens total, below 9216. No integrity, runtime,
+resource or telemetry halt occurred. Per-call cap remained 384.
+
+Outcome counts, each arm denominator = 12
+Direct: 8 structured valid withholding responses, 0 answer drafts, 4 failures
+(3 schema failures: claim items were not required objects; 1 output-length exhaustion).
+RAG: 10 structured valid outputs: 6 source-cited drafts pending review, 4 withholding;
+2 failures (1 output-length exhaustion; 1 repetition stop).
+12 claim-to-source references resolved structurally across the six RAG drafts.
+No invalid-citation failures. Direct supplied-evidence citations are N/A.
+These are structural output counts, NOT correctness/faithfulness rates.
+
+Language breakdown (draft / withholding / failure; four calls per cell)
+English: Direct 0/2/2; RAG 3/1/0.
+Hindi: Direct 0/3/1; RAG 0/2/2.
+Hinglish: Direct 0/3/1; RAG 3/1/0.
+No language-quality scores were assigned. Hindi RAG returned uncertainty for IN06,
+exhausted output length for IN07, hit repetition for IN10 and withheld for IN14.
+IN10 English and Hinglish drafts cite both expanded-16-r1 and expanded-17-r1.
+This verifies citation identity, not complete or factually correct comparison.
+Both arms withheld on all three IN14 variants. Reasons remain unverified explanatory
+text; abstention appropriateness and unsupported content require human review.
+No externally-false label was inferred from absence in the tiny corpus.
+
+Measured costs
+Direct: 2375 input / 2696 output tokens; backend decode/prefill 112.569 seconds.
+RAG: 33121 input / 2534 output tokens; backend decode/prefill 283.185 seconds.
+E5 retrieval total: 0.615 seconds; E5 service initialization: 5.049 seconds (includes
+integrity checks and model load; not isolated weight-deserialization time).
+Qwen model load: 1.442 seconds.
+Maximum MLX allocation: 3240684676 bytes (3.018 GiB).
+Process lifetime peak RSS: 610172928 bytes (581.906 MiB), reported separately;
+do not add RSS and MLX allocation as if they measured disjoint physical memory.
+Equal generated-token limits did not equalize input tokens, compute or latency.
+
+Protected local records
+  data/qa-c3-real-development-v1/report.html
+  data/qa-c3-real-development-v1/summary.json
+  data/qa-c3-real-development-v1/contract-diagnostics.json
+  data/qa-c3-real-development-v1/results.json (raw outputs/prompts/citations; private)
+  data/qa-c3-real-development-v1/attempts/ (24 consumed slots)
+  data/qa-c3-real-development-v1/retrieval-attempts/ (12 consumed searches)
+  data/qa-c3-real-development-v1/handoff.json (restricted source material; private)
+  data/qa-c3-real-development-v1/preflight.json
+  data/qa-c3-real-development-v1/retrieval.json
+Directory mode 0700; JSON records mode 0600. Nothing was uploaded or exposed in
+static UI assets. Shared summaries contain identifiers/counts, not source passages.
+
+Preservation and limitations
+416 protected files were hash-checked unchanged, including frozen pilot inputs,
+prior experiment records, QA references, UI, RAG and configurations. All twelve
+QA-reference decisions and all generated-answer human scoring fields remain blank.
+No reference-dependent scoring, new gold labels, HOLD/license/split changes,
+source acquisition, model downloads, commits, push or deployment occurred.
+
+This is a development experiment over four information needs and twelve correlated
+language variants, not held-out evidence of general QA performance. Raw failure text
+was retained and no post-hoc repair or prompt tuning was performed. The experiment
+is finished; the next action is genuine human review, not more inference.

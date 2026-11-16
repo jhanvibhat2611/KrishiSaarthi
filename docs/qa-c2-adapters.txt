@@ -1,0 +1,126 @@
+QA-C2: adapter preparation; no real execution authorized or performed
+
+Changed files (all new):
+  src/krishisaarthi/evaluation/qa_adapters.py
+  tests/test_qa_adapters.py
+  docs/qa-c2-adapters.txt
+
+Reuse and actual connections
+- QwenDecoder wraps an ALREADY LOADED instance of the existing MLXTextBackend.
+  It checks Qwen/tokenizer revision, pinned package configuration, temperature,
+  seed, context, batch and chat-template settings. It does not load, download or
+  initialize a model. Its decode method delegates a single 384-token call to the
+  existing backend. The original two-stage generator is never called or changed.
+- E5EvidenceAdapter wraps the existing ALREADY LOADED LocalRetrieval service. It
+  checks cache/model/corpus identity, delegates Top-5 retrieval to service.search,
+  checks every result against trusted passage records and validates source bytes,
+  canonical text, offsets and page files via existing validate_corpus. No index
+  operation, model loading or gold/reference lookup is implemented here.
+- PairedComparison receives the narrow Question type, an EvidencePack and source
+  documents. It uses existing Direct system instructions/prompt construction and
+  RAG_SYSTEM; only the RAG user message includes sources and qualifications.
+  Both prompts use exactly the same question/language. The Direct decoder call
+  gets no evidence pack, reference answer, expected evidence or answerability.
+- The RAG message assigns E1..E5 in retrieved order. Canonical citations are
+  application-managed using existing resolve_answer and CitationValidator.
+  A real-mode pair additionally requires exact complete frozen passage records
+  (fixed 15-passage fingerprint) and checks every selected record against them.
+  Synthetic fixture offsets are never substituted for PAU canonical offsets.
+- Raw outputs undergo existing strict duplicate-key/JSON/status/schema validation.
+  Resolved citations include source document, page, hashes, exact offsets and
+  qualifications. Structural validity never establishes factual support.
+
+What is NOT connected
+There is no real-run CLI, model constructor, QA-reference loader, dataset loader,
+scorer or UI route. Importing the module does not import MLX/Torch/Transformers.
+Real model loading and retrieval execution were not tested or performed. Existing
+QA-C1 fake-only CLI, proposals, reference drafts, UI and historical runs are unchanged.
+The only decoder/retrieval invocations in this milestone were synthetic mocks.
+Future orchestration must explicitly load validated resources and obtain user
+execution authorization; callable adapter methods are not authorization themselves.
+
+Future run limits (unchanged)
+configs/qa-readiness-e5.proposed.json remains the configuration: IN06/07/10/14 x
+EN/HI/Hinglish, 12 Direct + 12 RAG calls, one decode each, 384 NEW tokens, temperature
+0, seed 0, context 8192, no retries/repairs. Qwen checkpoint/tokenizer:
+  mlx-community/Qwen3-4B-Instruct-2507-4bit
+  50d427756c6b1b2fe0c0a10f67fbda1fc8e82c1b
+RAG uses pinned multilingual E5 Top-5 and frozen PAU Pilot v0.1 only. No Stage A
+candidate-selection call. Proposal permission flags remain false; this milestone
+approves implementation/testing only, not a change to execution permissions.
+
+Accounting and failures
+- Preflight BOTH template-tokenized prompts before any decode. Each may use at most
+  7808 input tokens plus 384 reserved output tokens. No truncation or passage removal.
+  Preflight failure blocks both planned slots, with zero attempted decode calls.
+- A slot becomes attempted immediately before decode; runtime failure still counts.
+  Each planned case may be submitted once per comparison instance. Repeat attempts
+  are rejected; no retries. Runtime or telemetry failures halt subsequent calls.
+- Raw output/partial output survives malformed JSON, schema/citation failures,
+  length exhaustion and runtime failures. Error messages are not logged or copied
+  into shareable reports. Unsafe/unrecognized exceptions are runtime failures.
+- Per-call application latency surrounds decode and validation; backend decode
+  metrics are separately retained. Exact template input counts/hashes, generated
+  token counts, finish reason and backend memory/runtime metrics are recorded.
+  Partial-failure metrics unavailable from the backend stay null, not invented 0.
+  Completed responses with missing generated-token/runtime metrics fail telemetry
+  validation. Changed input counts/hashes or invalid output counts halt the run.
+- All 24 planned slots remain the primary denominator, with 12/arm and 4/language/
+  arm. Actual model attempts and mock decode calls are distinct. Unattempted slots,
+  completed responses, answer drafts, withholding and categorized failures remain
+  separate. Completion does not imply valid JSON or factual correctness.
+- Each case records Direct/RAG prompt counts and their difference. Equal output
+  caps do not establish equal input budgets, prefill costs or total compute.
+- Blank human-review fields reuse the existing rubric. Direct supplied-evidence
+  citation applicability is N/A. RAG citation review is separate from factual
+  support. Externally verified false and its verification reference remain blank;
+  unsupported by this corpus is not automatically externally false.
+
+Private recording
+save_private writes fresh JSON only inside the repository's Git-ignored data/
+folder, with owner read/write permissions (0600), no overwrites, no traversal and
+no redirected data directory. It emits nothing to stdout. Do not print returned
+records: they contain prompts, raw responses and restricted citation quotations.
+A future runner must save even partially completed sessions in a finally block;
+no end-to-end runner or crash-resume policy is implemented in this milestone.
+
+Validation
+  PYTHONDONTWRITEBYTECODE=1 .venv-rag/bin/python -m pytest -p no:cacheprovider tests/test_qa_comparison_fake.py tests/test_qa_readiness.py tests/test_qa_adapters.py -q
+Synthetic mocks cover Direct isolation, equal questions/settings, canonical source
+binding, absent/invalid handles, changed source text/identity, preflight overflow,
+partial failures, telemetry failure, attempted denominators, language counts,
+blank scoring, private output persistence and import-without-model behavior.
+Initial collection caught a typo in a new test dictionary; corrected before the
+passing checks. No real outputs, passages or answers are embedded in these tests.
+
+Outstanding environment/runtime limitations
+- E5/Torch lives in .venv; MLX lives in .venv-rag. No environment merge/dependency
+  install is included. A future runner should serialize validated E5 evidence in
+  a private file, release E5, then initialize Qwen in its pinned environment and
+  revalidate the records. That handoff and model lifetime orchestration still need
+  implementation after approval; neither model is instantiated by QA-C2.
+- Actual prompt lengths and memory safety remain unmeasured. The existing decoder
+  enforces its resource constraints; halt on failure, never silently switch models.
+- Existing Hindi/Hinglish generator quality limitations remain unresolved. Mock
+  passing tests demonstrate plumbing only, not successful source-grounded answers.
+- The two-claim contract may constrain multi-part answers. Finalize it before the
+  run, not after observing failures. Greedy/seeded MLX is not a cross-device bitwise
+  reproducibility promise. No inference-time answerability certification is added.
+
+Existing human review sheet (not modified)
+  data/qa-reference-draft-v2/review.html
+  data/qa-reference-draft-v2/reviewer-decisions.pending.json
+All twelve decisions remain pending. Review the actual reference answers and checks,
+then save genuine decisions separately under the existing schema. Original retrieval
+annotation sign-off does not approve QA reference answers.
+
+Precise remaining gates
+1 Genuine human review of all twelve QA references and approval of the corpus-
+  bounded scoring rubric before any reference-dependent scoring. Neither arm may
+  receive references/labels, even after their approval.
+2 Approval of final paired prompts/output contract and unchanged bounded 24-call,
+  384-token settings. E5 Top-5 is already the requested planned retrieval choice.
+3 Approval to finish the local process/evidence handoff and resource-loading runner.
+4 Explicit authorization for the bounded real inference run. QA-C2 contains zero
+  real calls and does not authorize that run. Raw results must remain private.
+No commit, staging, push or deployment was performed.

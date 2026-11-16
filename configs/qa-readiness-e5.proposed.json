@@ -1,0 +1,107 @@
+{
+  "proposal_version": "qa-readiness-e5-v1",
+  "status": "PROPOSED_UNAPPROVED",
+  "real_execution_authorized": false,
+  "source_use_authorized_by_proposal": false,
+  "development_only": true,
+  "cases": [
+    {
+      "case_id": "pilot-v01-in-06-en",
+      "group_id": "pilot-v01-in-06",
+      "language": "en"
+    },
+    {
+      "case_id": "pilot-v01-in-06-hi",
+      "group_id": "pilot-v01-in-06",
+      "language": "hi"
+    },
+    {
+      "case_id": "pilot-v01-in-06-hinglish",
+      "group_id": "pilot-v01-in-06",
+      "language": "hinglish"
+    },
+    {
+      "case_id": "pilot-v01-in-07-en",
+      "group_id": "pilot-v01-in-07",
+      "language": "en"
+    },
+    {
+      "case_id": "pilot-v01-in-07-hi",
+      "group_id": "pilot-v01-in-07",
+      "language": "hi"
+    },
+    {
+      "case_id": "pilot-v01-in-07-hinglish",
+      "group_id": "pilot-v01-in-07",
+      "language": "hinglish"
+    },
+    {
+      "case_id": "pilot-v01-in-10-en",
+      "group_id": "pilot-v01-in-10",
+      "language": "en"
+    },
+    {
+      "case_id": "pilot-v01-in-10-hi",
+      "group_id": "pilot-v01-in-10",
+      "language": "hi"
+    },
+    {
+      "case_id": "pilot-v01-in-10-hinglish",
+      "group_id": "pilot-v01-in-10",
+      "language": "hinglish"
+    },
+    {
+      "case_id": "pilot-v01-in-14-en",
+      "group_id": "pilot-v01-in-14",
+      "language": "en"
+    },
+    {
+      "case_id": "pilot-v01-in-14-hi",
+      "group_id": "pilot-v01-in-14",
+      "language": "hi"
+    },
+    {
+      "case_id": "pilot-v01-in-14-hinglish",
+      "group_id": "pilot-v01-in-14",
+      "language": "hinglish"
+    }
+  ],
+  "corpus_version": "Pilot Corpus v0.1",
+  "corpus_fingerprint": "a919560be507b862be119a236fd1d2501f8d7c32d8fe6ea4951114b205f8c88a",
+  "index_identifier": "dense-cosine-d74a39927f9bc7bfab2770a7da2f2a9c9378d02c96a5e77259ce147e2b58d44a",
+  "index_manifest_path": "data/embeddings/1873ab8f29bace271c44fd5a2711cf2e141248b47a631b1bdfe7e8dd7b4ac2ce/manifest.json",
+  "selected_retriever": "e5",
+  "proposed_top_k": 5,
+  "existing_retrieval_config_paths": [
+    "configs/pilot-evaluation.toml",
+    "configs/dense-models.json"
+  ],
+  "model_id": "mlx-community/Qwen3-4B-Instruct-2507-4bit",
+  "model_revision": "50d427756c6b1b2fe0c0a10f67fbda1fc8e82c1b",
+  "tokenizer_revision": "50d427756c6b1b2fe0c0a10f67fbda1fc8e82c1b",
+  "mlx_config_path": "configs/mlx-generator.json",
+  "mlx_config_sha256": "e982eb43ab85d17ce0faae12875f88ec378099153bc2cab385558999373be430",
+  "max_output_tokens_per_call": 384,
+  "max_calls_per_arm": 12,
+  "max_calls_total": 24,
+  "generation_calls_per_question_arm": 1,
+  "context_limit": 8192,
+  "temperature": 0.0,
+  "seed": 0,
+  "batch_size": 1,
+  "retries": 0,
+  "repairs": 0,
+  "retrieval_model_id": "intfloat/multilingual-e5-base",
+  "retrieval_revision": "d128750597153bb5987e10b1c3493a34e5a4502a",
+  "retrieval_tokenizer_revision": "d128750597153bb5987e10b1c3493a34e5a4502a",
+  "embedding_cache_key": "1873ab8f29bace271c44fd5a2711cf2e141248b47a631b1bdfe7e8dd7b4ac2ce",
+  "embedding_manifest_sha256": "3dab7b11cdc6bf304c09f3dc03f949605443fbd1f2e498cde14d419f787ddf73",
+  "retrieval_model_fingerprint": "d74a39927f9bc7bfab2770a7da2f2a9c9378d02c96a5e77259ce147e2b58d44a",
+  "generation_packages": {
+    "mlx-lm": "0.26.3",
+    "mlx": "0.26.5",
+    "transformers": "4.57.1"
+  },
+  "chat_template": "pinned tokenizer apply_chat_template; tokenize=True; add_generation_prompt=True",
+  "prompt_prefill_step_size": 256
+}

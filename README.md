@@ -4,6 +4,16 @@ A research-oriented English/Hindi/Hinglish agricultural retrieval project with a
 conservative, local evidence-grounded RAG scaffold. Current source scope is wheat;
 the frozen pilot contains Punjab-specific, source-dated English evidence.
 
+The assignment's main application is a **multilingual evidence finder**: English,
+Hindi and Hinglish questions retrieve English wheat passages with source citations.
+It does not generate answers. The local RAG/Direct-LLM experiments are a separate,
+experimental component with outstanding human assessment and known generation
+failures. See the [submission and demonstration guide](docs/submission-guide.md).
+
+The running collection is still **15 approved passages**, not 100. The proposed
+100-passage wheat collection requires additional source review and a separate
+versioned snapshot; collected or held documents are not automatically searchable.
+
 ## Current implementation
 
 - Text PDF/plain-text ingestion, canonical offsets, hashes and source/page provenance.

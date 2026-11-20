@@ -7,7 +7,7 @@ from pathlib import Path
 from .qa import answer_question
 
 STATIC = Path(__file__).with_name('static')
-ASSETS = {'/': ('index.html', 'text/html'), '/app.js': ('app.js', 'text/javascript'), '/style.css': ('style.css', 'text/css')}
+ASSETS = {'/': ('index.html', 'text/html'), '/app.js': ('app.js', 'text/javascript'), '/style.css': ('style.css', 'text/css'), '/field-hero.jpg': ('field-hero.jpg', 'image/jpeg')}
 DOCUMENTS = [
     {'passage_id': 'synthetic-water-01', 'document_id': 'demo-notebook-water', 'title': 'Water observations', 'section': 'Notebook A · entry 1', 'text': 'SYNTHETIC: An invented wheat research notebook compares two fictional irrigation observation plots. This example contains no irrigation schedule or watering recommendation.', 'terms': 'water irrigation wheat pani paani sinchai gehu gehun पानी सिंचाई गेहूँ गेहूं'},
     {'passage_id': 'synthetic-soil-02', 'document_id': 'demo-notebook-soil', 'title': 'Soil sample records', 'section': 'Notebook B · entry 2', 'text': 'SYNTHETIC: A fictional researcher labels wheat soil samples Cedar and Willow before recording observations. These invented labels are not soil classes or fertilizer advice.', 'terms': 'soil sample fertilizer wheat mitti khaad gehu gehun मिट्टी खाद उर्वरक गेहूँ गेहूं'},
@@ -22,6 +22,12 @@ def validate_payload(payload):
         raise ValueError('Enter a question between 1 and 1,000 characters.')
     if language not in ('en', 'hi', 'hinglish'):
         raise ValueError('Choose English, Hindi or Hinglish.')
+    if payload.get('crop', 'all') not in ('all', 'wheat', 'barley', 'maize', 'chickpea', 'mustard'):
+        raise ValueError('Choose an available crop.')
+    if type(payload.get('normalize_hinglish', True)) is not bool:
+        raise ValueError('Hinglish assistance must be true or false.')
+    if type(payload.get('expand_terms', True)) is not bool:
+        raise ValueError('Search terminology assistance must be true or false.')
     return q, language
 
 def search(payload):
@@ -53,7 +59,11 @@ class Handler(BaseHTTPRequestHandler):
         if not self.allowed_host():
             self.reply(403, b'{"error":"Host not allowed"}'); return
         if self.path == '/api/status':
-            self.reply(200, json.dumps({'live_available':getattr(self.server, 'retrieval', None) is not None}).encode()); return
+            service = getattr(self.server, 'retrieval', None)
+            status = {'live_available':service is not None}
+            if service is not None and hasattr(service, 'collection_info'):
+                status['collection'] = service.collection_info
+            self.reply(200, json.dumps(status).encode()); return
         asset = ASSETS.get(self.path)
         if not asset:
             self.reply(404, b'{"error":"Not found"}')
@@ -99,11 +109,18 @@ def main():
     parser.add_argument('--port', type=int, default=8765)
     parser.add_argument('--real', action='store_true', help='Require frozen PAU/E5 artifacts; fail rather than rebuild')
     parser.add_argument('--root', type=Path, default=Path.cwd())
+    parser.add_argument('--collection', type=Path, help='Explicit private application snapshot; requires --real and an existing E5 cache')
     args = parser.parse_args()
+    if args.collection and not args.real:
+        parser.error('--collection requires --real')
     retrieval = None
     if args.real:
         from .local import LocalRetrieval
-        retrieval = LocalRetrieval(args.root)
+        if args.collection:
+            from .local import ApplicationRetrieval
+            retrieval = ApplicationRetrieval(args.root, args.collection)
+        else:
+            retrieval = LocalRetrieval(args.root)
     server = ThreadingHTTPServer(('127.0.0.1', args.port), Handler)
     server.retrieval = retrieval
     print(f'KrishiSaarthi local evidence: http://127.0.0.1:{server.server_port}', flush=True)

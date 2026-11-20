@@ -1,5 +1,11 @@
 # Local evidence explorer
 
+For the completed five-crop application, run `./scripts/start_local_app.sh` and
+open http://127.0.0.1:8767. See [multi-crop application](multicrop-application.md)
+for the 122-passage collection, AI-assisted status, crop filtering and separate
+application-only E5 context representation. The original pilot launch below is
+retained for historical reproduction; it still selects exactly 15 passages.
+
 Run from the repository root using the existing dense environment (no new install
 or model download is needed):
 

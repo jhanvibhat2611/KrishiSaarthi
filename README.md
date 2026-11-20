@@ -1,18 +1,41 @@
 # KrishiSaarthi
 
-A research-oriented English/Hindi/Hinglish agricultural retrieval project with a
-conservative, local evidence-grounded RAG scaffold. Current source scope is wheat;
-the frozen pilot contains Punjab-specific, source-dated English evidence.
+A local multilingual agricultural **evidence finder** for English, Hindi and
+Hinglish questions. The application uses pinned multilingual E5 and displays
+source passages with document/page citations. It does not generate answers.
 
-The assignment's main application is a **multilingual evidence finder**: English,
-Hindi and Hinglish questions retrieve English wheat passages with source citations.
-It does not generate answers. The local RAG/Direct-LLM experiments are a separate,
-experimental component with outstanding human assessment and known generation
-failures. See the [submission and demonstration guide](docs/submission-guide.md).
+## Run the application
 
-The running collection is still **15 approved passages**, not 100. The proposed
-100-passage wheat collection requires additional source review and a separate
-versioned snapshot; collected or held documents are not automatically searchable.
+On the configured development machine, from this repository:
+
+```sh
+./scripts/start_local_app.sh
+```
+
+Open **http://127.0.0.1:8767/** and choose a crop or search all crops. The local
+application collection contains **124 passages across five crop groups**:
+
+| Crop group | Passages |
+| --- | ---: |
+| Wheat | 16 |
+| Barley | 24 |
+| Spring maize | 22 |
+| Chickpea / gram | 25 |
+| Rapeseed / mustard | 36 |
+
+The source is PAU's Punjab-specific Rabi 2025–26 publication. The new collection
+uses AI-assisted source selection, not invented human approvals. It is separate
+from the unchanged 15-passage research pilot and is **not a verified benchmark**.
+Source dates, regional restrictions and cultivation conditions remain applicable.
+
+Private source files and the existing pinned model/cache are required; startup
+fails if they are missing or changed. A public clone can run the explicitly labeled
+synthetic demo after baseline setup using `python -m krishisaarthi.ui.server`.
+No restricted source text or weights are distributed in Git.
+
+See [multi-crop setup and limitations](docs/multicrop-application.md) and the
+[submission guide](docs/submission-guide.md). RAG/Direct-LLM experiments remain
+separate, with known generation failures and outstanding human assessment.
 
 ## Current implementation
 
@@ -27,7 +50,7 @@ versioned snapshot; collected or held documents are not automatically searchable
   Generator interface, deterministic mock, CitationValidator and RAGPipeline.
 - Optional pinned local MLX adapter with offline checkpoint validation and measured local inference support.
 
-- Local cream-and-green evidence UI with read-only frozen PAU E5 retrieval (Top-K=5)
+- Local cream-and-green evidence UI with crop filtering and read-only PAU E5 retrieval (Top-K=5)
   and an explicitly selected synthetic fallback; see [launch instructions](docs/retrieval-ui.md).
 
 No training, query translation/normalization, voice or image analysis is

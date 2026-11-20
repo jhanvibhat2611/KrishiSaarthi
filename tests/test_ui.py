@@ -36,7 +36,10 @@ def server():
 
 def test_static_allowlist_and_no_research_routes(server):
     with urlopen(server) as r:
-        assert b'Local evidence explorer' in r.read()
+        assert b'KrishiSaarthi' in r.read()
+    with urlopen(server + '/field-hero.jpg') as r:
+        assert r.headers['Content-Type'].startswith('image/jpeg')
+        assert r.read().startswith(b'\xff\xd8')
         assert "default-src 'self'" in r.headers['Content-Security-Policy']
     for path in ['/data/pilot-v0.1/passages.jsonl','/../pyproject.toml','/api/live','/source.html']:
         with pytest.raises(HTTPError) as e: urlopen(server+path)

@@ -25,5 +25,5 @@ testpaths = ["tests"]
 pythonpath = ["src"]
 
 [tool.setuptools.package-data]
-"krishisaarthi.ui" = ["static/*.html", "static/*.css", "static/*.js"]
+"krishisaarthi.ui" = ["static/*.html", "static/*.css", "static/*.js", "static/*.jpg"]
 "krishisaarthi.evaluation" = ["qa_review.html"]

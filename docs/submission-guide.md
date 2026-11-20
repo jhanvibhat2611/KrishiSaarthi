@@ -2,29 +2,32 @@
 
 ## Project scope
 
-KrishiSaarthi retrieves English wheat evidence for English, Hindi and Hinglish
+KrishiSaarthi retrieves English crop evidence for English, Hindi and Hinglish
 questions. Its primary application uses pinned multilingual E5 and shows the top
 five passages with document/page references and canonical offsets. These are
 retrieval results, not generated answers or agricultural recommendations.
 
-The working application contains 15 manually selected PAU passages from Punjab's
-Rabi 2025–26 package of practices. Source conditions and publication dates matter;
-Punjab evidence must not be presented as universally applicable. The target of
-approximately 100 useful passages is future collection work, not the current count.
+The working application contains 124 passages across wheat, barley, spring maize,
+chickpea and rapeseed–mustard from Punjab's Rabi 2025–26 package of practices.
+The 15 inherited wheat passages retain their pilot selection; the 109 added
+passages are AI-assisted source selections, not human-verified research evidence. Source conditions and publication dates matter;
+Punjab evidence must not be presented as universally applicable. The approximately 100-passage application target has been exceeded; geographic and
+source diversity remain limited.
 
 ## Run the existing local application
 
 From the repository root on the configured development machine:
 
 ```sh
-PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src .venv/bin/python -m krishisaarthi.ui.server --real --port 8766
+./scripts/start_local_app.sh
 ```
 
-Open http://127.0.0.1:8766. Stop with Ctrl-C. If that address is already serving
+Open http://127.0.0.1:8767. Stop with Ctrl-C. If that address is already serving
 the app, use the running server. Startup validates frozen source provenance, the
 pinned local E5 checkpoint and the existing passage embedding cache. Missing or
 changed artifacts cause an error; the application does not silently download,
-rebuild or switch models. The current loader deliberately accepts only Pilot v0.1.
+rebuild or switch models. The launcher explicitly selects the application snapshot. The original pilot
+remains available through the original `--real` command without `--collection`.
 
 A public checkout has code and synthetic fixtures, not the copyrighted corpus or
 model weights. For a reproducible synthetic demonstration, install the baseline
@@ -70,7 +73,8 @@ are excluded from positive-evidence metrics and counted separately.
 
 | Material | Status and proper use |
 | --- | --- |
-| PAU Pilot v0.1 | 15 approved passages from one source; current live corpus |
+| Application Multicrop v2 | 124 passages, five crop groups, one source; AI-assisted local collection |
+| PAU Pilot v0.1 | 15 approved passages; frozen research corpus preserved |
 | Original retrieval evaluation | 16 information needs, 48 signed language variants; exploratory pilot only |
 | Other collected wheat documents | Review candidates or HOLD material; not automatically admitted |
 | Code-mixing variants | Pending review; do not describe as a verified independent test set |
@@ -81,25 +85,20 @@ Known Qwen failures include invalid structured output, unsupported claims and
 unreliable supported Hindi/Hinglish answers. Citation structure alone cannot
 establish factual support. Keep generation out of the main evidence-search demo.
 
-## Completion gates for the larger collection
+## Status and remaining work
 
-1. Review additional contiguous wheat source regions, preserving conditions,
-   dates, geography, exact offsets and page identity. Leave existing HOLD decisions
-   intact unless the responsible human explicitly resolves them.
-2. Check duplicates, tables, privacy, extraction and reuse restrictions. Do not
-   split or duplicate passages simply to reach 100; report actual distinct coverage.
-3. Build a separately versioned approved snapshot with the existing corpus workflow.
-   Preserve Pilot v0.1 and all historical experiments unchanged.
-4. Prepare E5 embeddings bound to the new approved snapshot, then extend the app's
-   validated loader to select it explicitly. This is not implemented by changing
-   a passage-count constant or pointing the existing cache at different text.
-5. Run provenance checks and local three-language application smoke tests. Existing
-   pilot metrics do not transfer to a larger corpus without a separate evaluation.
-6. Record the final collection size, source/topic coverage and unresolved gaps in
-   the assignment report. Polish the UI after the functional collection is ready.
+The multi-crop application and source-bound E5 cache are implemented. It uses the
+same 256-token/48-overlap chunking settings with explicit source-section boundaries.
+The frozen research pilot, labels, HOLD decisions and prior results are unchanged.
 
-Source review is the current gate. Deferring generation assessment does not
-authorize automatic source approval or answer-quality claims.
+The expanded collection is an application dataset, not an automatically approved
+research corpus. Human assessment remains optional follow-up for the assignment
+but necessary before claiming human-verified evidence or answer quality. No new
+labeled evaluation has been run. Existing pilot scores do not describe performance
+on the expanded collection. UI visual polish can follow independently.
+
+See `docs/multicrop-application.md` for snapshot verification, the explicit launch
+command, cache reproduction and limitations. Do not publish local source text.
 
 ## Tests and handover
 
